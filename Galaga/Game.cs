@@ -28,8 +28,11 @@ namespace Galaga
                 while (gameTimer.ShouldUpdate())
                 {
                     window.PollEvents();
+
+                    //my name is Vlad
                     // update game logic here...
                 }
+
                 if (gameTimer.ShouldRender())
                 {
                     window.Clear();
