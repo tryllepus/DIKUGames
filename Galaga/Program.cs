@@ -6,9 +6,8 @@ namespace Galaga
     {
         static void Main(string[] args)
         {
-            // var game = new Game();
-            // game.Run();
-            Console.WriteLine("Hello World!"); // TODO: Delete this line!
+            var game = new Game();
+            game.Run();
         }
     }
 }
