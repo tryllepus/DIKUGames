@@ -23,7 +23,7 @@ namespace Galaga
         public void Render()
         {
             // TODO: render the player entity
-            //this.entity.RenderEntity(); //! this works 
+            this.entity.RenderEntity(); //! this works 
         }
 
         public void Move() //! to be checked
