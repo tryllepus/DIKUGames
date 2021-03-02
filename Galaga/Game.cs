@@ -28,14 +28,13 @@ namespace Galaga
                 while (gameTimer.ShouldUpdate())
                 {
                     window.PollEvents();
-
-                    //my name is Vlad and i am testing!
                     // update game logic here...
                 }
 
                 if (gameTimer.ShouldRender())
                 {
                     window.Clear();
+                    player.Render(); //! this works
                     // render game entities here...
                     window.SwapBuffers();
                 }
