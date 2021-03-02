@@ -22,7 +22,7 @@ namespace Galaga
         }
         public void Run()
         {
-            while(window.IsRunning())
+            while (window.IsRunning())
             {
                 gameTimer.MeasureTime();
                 while (gameTimer.ShouldUpdate())
@@ -45,5 +45,4 @@ namespace Galaga
         }
     }
 }
-        
- 
+
