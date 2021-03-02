@@ -29,7 +29,7 @@ namespace Galaga
                 {
                     window.PollEvents();
 
-                    //my name is Vlad
+                    //my name is Vlad and i am testing!
                     // update game logic here...
                 }
 
