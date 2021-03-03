@@ -15,6 +15,7 @@ namespace Galaga
         private Window window;
         private GameTimer gameTimer;
         private GameEventBus<object> eventBus;
+        private EntityContainer<Enemy> enemies;
         public Game()
         {
             window = new Window("Galaga", 500, 500);
@@ -30,6 +31,17 @@ namespace Galaga
 
             window.RegisterEventBus(eventBus);
             eventBus.Subscribe(GameEventType.InputEvent, this);
+
+            var images = ImageStride.CreateStrides(4, Path.Combine("Assets", "Images", "BlueMonster.png"));
+            const int numEnemies = 8;
+            enemies = new EntityContainer<Enemy>(numEnemies);
+            for (int i = 0; i < numEnemies; i++)
+            {
+                enemies.AddEntity(new Enemy(
+                    new DynamicShape(new Vec2F(0.1f + (float)i * 0.1f, 0.9f),
+                    new Vec2F(0.1f, 0.1f)),
+                    new ImageStride(80, images)));
+            }
 
 
         }
@@ -50,7 +62,8 @@ namespace Galaga
                 {
                     window.Clear();
                     player.Render(); //! this works
-                                     // render game entities here...
+                    enemies.RenderEntities();
+                    // render game entities here...
                     window.SwapBuffers();
                 }
                 if (gameTimer.ShouldReset())

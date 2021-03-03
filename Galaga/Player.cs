@@ -71,11 +71,11 @@ namespace Galaga
         {
             if (moveLeft >= 0.0f)
             {
-                this.shape.Direction.X -= moveLeft;
+                this.shape.Position.X -= moveLeft;
             }
             if (moveRight >= 0.0f)
             {
-                this.shape.Direction.X += moveRight;
+                this.shape.Position.X += moveRight;
             }
 
 
