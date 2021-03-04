@@ -18,8 +18,11 @@ namespace Galaga
         private GameTimer gameTimer;
         private GameEventBus<object> eventBus;
         private EntityContainer<Enemy> enemies;
-        private EntityContainer playerShots;        //<PlayerShot> playerShots;
+        private EntityContainer playerShots;
         private IBaseImage playerShotImage;
+        private AnimationContainer enemyExplosions;
+        private List<Image> explosionStrides;
+        private const int EXPLOSION_LENGTH_MS = 500;
         public Game()
         {
             window = new Window("Galaga", 500, 500);
@@ -48,8 +51,13 @@ namespace Galaga
             }
 
 
-            playerShots = new DIKUArcade.Entities.EntityContainer();   //<PlayerShot>();
+            playerShots = new DIKUArcade.Entities.EntityContainer();
             playerShotImage = new Image(Path.Combine("Assets", "Images", "BulletRed2.png"));
+
+
+            enemyExplosions = new AnimationContainer(numEnemies);
+            explosionStrides = ImageStride.CreateStrides(8,
+                Path.Combine("Assets", "Images", "Explosion.png"));
 
 
         }
@@ -63,7 +71,7 @@ namespace Galaga
                 {
                     window.PollEvents();
                     // update game logic here...
-                    eventBus.ProcessEvents(); //! WORKS
+                    eventBus.ProcessEvents();
                     player.Move();
                     IterateShots();
                 }
@@ -71,9 +79,10 @@ namespace Galaga
                 if (gameTimer.ShouldRender())
                 {
                     window.Clear();
-                    player.Render(); //! this works
+                    player.Render();
                     enemies.RenderEntities();
                     playerShots.RenderEntities();
+                    enemyExplosions.RenderAnimations();
                     // render game entities here...
                     window.SwapBuffers();
                 }
@@ -85,7 +94,6 @@ namespace Galaga
                 }
             }
         }
-
 
         public void KeyPress(string key)
         {
@@ -99,7 +107,7 @@ namespace Galaga
                     player.SetMoveRight(true);
                     break;
                 case "KEY_SPACE":
-                    IterateShots(); //! WORK
+                    IterateShots();
                     break;
 
                 default:
@@ -107,7 +115,7 @@ namespace Galaga
             }
         }
 
-        public void KeyRelease(string key) //! WORKS
+        public void KeyRelease(string key)
         {
             // TODO: switch on key string and disable the player's move direction
             // TODO: Close window if escape is pressed
@@ -119,11 +127,11 @@ namespace Galaga
                 case "KEY_RIGHT":
                     player.SetMoveRight(false);
                     break;
-                case "KEY_ESCAPE":  //! WORKS
+                case "KEY_ESCAPE":
                     window.CloseWindow();
                     break;
                 case "KEY_SPACE":
-                    AddNewShot(); //!WORKS
+                    AddNewShot();
                     break;
 
                 default:
@@ -146,13 +154,12 @@ namespace Galaga
 
             }
         }
-        public void AddNewShot() //! WORK
+        public void AddNewShot()
         {
             var shot = new DynamicShape(new Vec2F(player.getPos().X, player.getPos().Y), //+ 0.008f, player.Shape.Y + 0.01f),
                 new Vec2F(0.008f, 0.021f));
 
             playerShots.AddDynamicEntity(shot, playerShotImage);
-            //playerShots.AddDynamicEntity(); //AddEntity(shot);
 
         }
 
@@ -166,10 +173,10 @@ namespace Galaga
                     ((DynamicShape)shot.Shape).Direction.Y += 0.02f;
 
                     /* TODO: guard against window borders */
-                    if (shot.Shape.Position.Y > 1.0f) //! to be tested
+                    if (shot.Shape.Position.Y > 1.0f)
                     {
                         // TODO: delete shot
-                        shot.DeleteEntity(); //! to be tested
+                        shot.DeleteEntity();
                     }
                     else
                     {
@@ -177,8 +184,10 @@ namespace Galaga
                         {
                             // TODO: if collision btw shot and enemy -> delete both
                             if (CollisionDetection.Aabb((DynamicShape)shot.Shape,
-                                 enemy.Shape).Collision)
+                             enemy.Shape).Collision)
                             {
+                                AddExplosion(new Vec2F(enemy.Shape.Position.X, enemy.Shape.Position.Y),
+                                    new Vec2F(enemy.Shape.Extent.X, enemy.Shape.Extent.Y));
                                 shot.DeleteEntity();
                                 enemy.DeleteEntity();
                             }
@@ -188,6 +197,18 @@ namespace Galaga
 
             });
         }
+
+
+        public void AddExplosion(Vec2F position, Vec2F extent)
+        {
+            // TODO: add explosion to the AnimationContainer
+            enemyExplosions.AddAnimation(
+                new StationaryShape(position, extent), EXPLOSION_LENGTH_MS,
+                new ImageStride(EXPLOSION_LENGTH_MS / 8, explosionStrides)
+            );
+
+        }
+
 
     }
 }
