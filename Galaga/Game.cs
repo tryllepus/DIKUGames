@@ -6,6 +6,7 @@ using DIKUArcade.Graphics;
 using DIKUArcade.Math;
 using System.Collections.Generic;
 using DIKUArcade.EventBus;
+using DIKUArcade.Physics;
 
 namespace Galaga
 {
@@ -16,6 +17,8 @@ namespace Galaga
         private GameTimer gameTimer;
         private GameEventBus<object> eventBus;
         private EntityContainer<Enemy> enemies;
+        private EntityContainer<PlayerShot> playerShots;
+        private IBaseImage playerShotImage;
         public Game()
         {
             window = new Window("Galaga", 500, 500);
@@ -44,7 +47,12 @@ namespace Galaga
             }
 
 
+            playerShots = new DIKUArcade.Entities.EntityContainer<PlayerShot>();
+            playerShotImage = new Image(Path.Combine("Assets", "Images", "BulletRed2.png"));
+
+
         }
+
         public void Run()
         {
             while (window.IsRunning())
@@ -56,6 +64,7 @@ namespace Galaga
                     // update game logic here...
                     eventBus.ProcessEvents(); //! to be ckecked
                     player.Move();
+                    IterateShots();
                 }
 
                 if (gameTimer.ShouldRender())
@@ -63,9 +72,11 @@ namespace Galaga
                     window.Clear();
                     player.Render(); //! this works
                     enemies.RenderEntities();
+                    playerShots.RenderEntities();
                     // render game entities here...
                     window.SwapBuffers();
                 }
+
                 if (gameTimer.ShouldReset())
                 {
                     // this update happens once every second
@@ -85,6 +96,9 @@ namespace Galaga
                     break;
                 case "KEY_RIGHT":
                     player.SetMoveRight(true);
+                    break;
+                case "KEY_SPACE":
+
                     break;
 
                 default:
@@ -107,6 +121,9 @@ namespace Galaga
                 case "KEY_ESCAPE":  //! WORKS
                     window.CloseWindow();
                     break;
+                case "KEY_SPACE":
+                    AddNewShot();
+                    break;
 
                 default:
                     break;
@@ -127,6 +144,48 @@ namespace Galaga
                     break;
             }
         }
+        public void AddNewShot() //! NOT SO SURE OF THIS!
+        {
+            var shot = new DynamicShape(new Vec2F(player.Shape.X + 0.008f, player.Shape.Y + 0.01f),
+                new Vec2F(0.008f, 0.021f));
+            //shot.AsDynamicShape();
+            //AddDynamicEntity(shot, playerShotImage);
+
+        }
+
+        private void IterateShots()
+        {
+            playerShots.Iterate(shot =>
+            {
+                // TODO: move the shot's shape
+                {
+                    shot.Shape.Move();
+                    ((DynamicShape)shot.Shape).Direction.Y += 0.02f;
+
+                    /* TODO: guard against window borders */
+                    if (shot.Shape.Position.Y > 1.0f) //! to be tested
+                    {
+                        // TODO: delete shot
+                        shot.DeleteEntity(); //! to be tested
+                    }
+                    else
+                    {
+                        enemies.Iterate(enemy =>
+                        {
+                            // TODO: if collision btw shot and enemy -> delete both
+                            if (CollisionDetection.Aabb((DynamicShape)shot.Shape,
+                                 enemy.Shape).Collision)
+                            {
+                                shot.DeleteEntity();
+                                enemy.DeleteEntity();
+                            }
+                        });
+                    }
+                }
+
+            });
+        }
+
     }
 }
 
