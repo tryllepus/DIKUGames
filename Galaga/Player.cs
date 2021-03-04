@@ -20,6 +20,11 @@ namespace Galaga
             this.moveRight = 0.0f;
             this.moveLeft = 0.0f;
         }
+
+        public Vec2F getPos()
+        {
+            return this.shape.Position;
+        }
         public void Render()
         {
             // TODO: render the player entity

@@ -1,3 +1,4 @@
+using System;
 using DIKUArcade;
 using DIKUArcade.Timers;
 using System.IO;
@@ -17,7 +18,7 @@ namespace Galaga
         private GameTimer gameTimer;
         private GameEventBus<object> eventBus;
         private EntityContainer<Enemy> enemies;
-        private EntityContainer<PlayerShot> playerShots;
+        private EntityContainer playerShots;        //<PlayerShot> playerShots;
         private IBaseImage playerShotImage;
         public Game()
         {
@@ -47,7 +48,7 @@ namespace Galaga
             }
 
 
-            playerShots = new DIKUArcade.Entities.EntityContainer<PlayerShot>();
+            playerShots = new DIKUArcade.Entities.EntityContainer();   //<PlayerShot>();
             playerShotImage = new Image(Path.Combine("Assets", "Images", "BulletRed2.png"));
 
 
@@ -86,7 +87,7 @@ namespace Galaga
         }
 
 
-        public void KeyPress(string key) //! to be checked
+        public void KeyPress(string key)
         {
             // TODO: switch on key string and set the player's move direction
             switch (key)
@@ -98,11 +99,11 @@ namespace Galaga
                     player.SetMoveRight(true);
                     break;
                 case "KEY_SPACE":
-
+                    IterateShots(); //! doesnt WORK
                     break;
 
                 default:
-                    break;
+                    throw new ArgumentException("Invalid key");
             }
         }
 
@@ -126,7 +127,7 @@ namespace Galaga
                     break;
 
                 default:
-                    break;
+                    throw new ArgumentException("Invalid key");
             }
         }
 
@@ -141,15 +142,17 @@ namespace Galaga
                     KeyRelease(gameEvent.Message);
                     break;
                 default:
-                    break;
+                    throw new ArgumentException("Invalid event");
+
             }
         }
         public void AddNewShot() //! NOT SO SURE OF THIS!
         {
-            var shot = new DynamicShape(new Vec2F(player.Shape.X + 0.008f, player.Shape.Y + 0.01f),
+            var shot = new DynamicShape(new Vec2F(player.getPos().X, player.getPos().Y), //+ 0.008f, player.Shape.Y + 0.01f),
                 new Vec2F(0.008f, 0.021f));
-            //shot.AsDynamicShape();
-            //AddDynamicEntity(shot, playerShotImage);
+
+            playerShots.AddDynamicEntity(shot, playerShotImage);
+            //playerShots.AddDynamicEntity(); //AddEntity(shot);
 
         }
 
