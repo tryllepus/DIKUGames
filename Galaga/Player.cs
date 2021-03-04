@@ -8,10 +8,12 @@ namespace Galaga
     {
         private float moveRight;
         private float moveLeft;
+        private float moveUp;
+        private float moveDown;
         private const float MOVEMENT_SPEED = 0.01f;
         private Entity entity;
         private DynamicShape shape;
-        public Vec2F Shape { get { return this.shape.Position; } } //! to be checked
+        public Vec2F Shape { get { return this.shape.Position; } }
 
         public Player(DynamicShape shape, IBaseImage image)
         {
@@ -19,6 +21,8 @@ namespace Galaga
             this.shape = shape;
             this.moveRight = 0.0f;
             this.moveLeft = 0.0f;
+            this.moveDown = 0.0f;
+            this.moveUp = 0.0f;
         }
 
         public Vec2F getPos()
@@ -28,10 +32,10 @@ namespace Galaga
         public void Render()
         {
             // TODO: render the player entity
-            this.entity.RenderEntity(); //! this works 
+            this.entity.RenderEntity();
         }
 
-        public void Move() //! to be checked
+        public void Move()
         {
             // TODO: move the shape and guard against the window borders
             if (this.shape.Position.X <= 0.0f)
@@ -42,9 +46,18 @@ namespace Galaga
             {
                 this.shape.Position.X = 1.0f - this.shape.Extent.X;
             }
+
+            if (this.shape.Position.Y <= 0.0f)
+            {
+                this.shape.Position.Y = 0.0f;
+            }
+            else if (this.shape.Position.Y >= 1.0f - this.shape.Extent.Y)
+            {
+                this.shape.Position.Y = 1.0f - this.shape.Extent.Y;
+            }
             this.shape.Move();
         }
-        public void SetMoveLeft(bool val) //!to be cheched
+        public void SetMoveLeft(bool val)
         {
             // TODO: set moveLeft appropriately and call UpdateMovement()
             if (val == true)
@@ -58,7 +71,7 @@ namespace Galaga
             }
 
         }
-        public void SetMoveRight(bool val) //! to be checked
+        public void SetMoveRight(bool val)
         {
             // TODO:set moveRight appropriately and call UpdateMovement()
             if (val == true)
@@ -71,8 +84,32 @@ namespace Galaga
                 moveRight += 0.0f;
             }
         }
+        public void SetMoveDown(bool val)
+        {
+            if (val == true)
+            {
+                moveDown += MOVEMENT_SPEED;
+                UpdateDirection();
+            }
+            else
+            {
+                moveDown += 0.0f;
+            }
+        }
+        public void SetMoveUp(bool val)
+        {
+            if (val == true)
+            {
+                moveUp += MOVEMENT_SPEED;
+                UpdateDirection();
+            }
+            else
+            {
+                moveUp += 0.0f;
+            }
+        }
 
-        private void UpdateDirection() //! to be checked
+        private void UpdateDirection()
         {
             if (moveLeft >= 0.0f)
             {
@@ -82,9 +119,16 @@ namespace Galaga
             {
                 this.shape.Position.X += moveRight;
             }
-
-
+            if (moveDown >= 0.0f)
+            {
+                this.shape.Position.Y -= moveDown;
+            }
+            if (moveUp >= 0.0f)
+            {
+                this.shape.Position.Y += moveUp;
+            }
         }
+
     }
 }
 

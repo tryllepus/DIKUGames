@@ -106,6 +106,12 @@ namespace Galaga
                 case "KEY_RIGHT":
                     player.SetMoveRight(true);
                     break;
+                case "KEY_UP":
+                    player.SetMoveUp(true);
+                    break;
+                case "KEY_DOWN":
+                    player.SetMoveDown(true);
+                    break;
                 case "KEY_SPACE":
                     IterateShots();
                     break;
@@ -126,6 +132,12 @@ namespace Galaga
                     break;
                 case "KEY_RIGHT":
                     player.SetMoveRight(false);
+                    break;
+                case "KEY_UP":
+                    player.SetMoveUp(false);
+                    break;
+                case "KEY_DOWN":
+                    player.SetMoveDown(false);
                     break;
                 case "KEY_ESCAPE":
                     window.CloseWindow();
