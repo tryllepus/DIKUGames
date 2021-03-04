@@ -63,7 +63,7 @@ namespace Galaga
                 {
                     window.PollEvents();
                     // update game logic here...
-                    eventBus.ProcessEvents(); //! to be ckecked
+                    eventBus.ProcessEvents(); //! WORKS
                     player.Move();
                     IterateShots();
                 }
@@ -99,15 +99,15 @@ namespace Galaga
                     player.SetMoveRight(true);
                     break;
                 case "KEY_SPACE":
-                    IterateShots(); //! doesnt WORK
+                    IterateShots(); //! WORK
                     break;
 
                 default:
-                    throw new ArgumentException("Invalid key");
+                    break;
             }
         }
 
-        public void KeyRelease(string key) //! to be checked
+        public void KeyRelease(string key) //! WORKS
         {
             // TODO: switch on key string and disable the player's move direction
             // TODO: Close window if escape is pressed
@@ -123,11 +123,11 @@ namespace Galaga
                     window.CloseWindow();
                     break;
                 case "KEY_SPACE":
-                    AddNewShot();
+                    AddNewShot(); //!WORKS
                     break;
 
                 default:
-                    throw new ArgumentException("Invalid key");
+                    break;
             }
         }
 
@@ -142,11 +142,11 @@ namespace Galaga
                     KeyRelease(gameEvent.Message);
                     break;
                 default:
-                    throw new ArgumentException("Invalid event");
+                    break;
 
             }
         }
-        public void AddNewShot() //! NOT SO SURE OF THIS!
+        public void AddNewShot() //! WORK
         {
             var shot = new DynamicShape(new Vec2F(player.getPos().X, player.getPos().Y), //+ 0.008f, player.Shape.Y + 0.01f),
                 new Vec2F(0.008f, 0.021f));
