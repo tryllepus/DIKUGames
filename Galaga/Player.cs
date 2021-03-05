@@ -16,7 +16,7 @@ namespace Galaga
         public Vec2F Shape { get { return this.shape.Position; } }
 
         public Player(DynamicShape shape, IBaseImage image)
-        {
+        {   
             entity = new Entity(shape, image);
             this.shape = shape;
             this.moveRight = 0.0f;

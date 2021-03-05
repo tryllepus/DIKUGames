@@ -73,6 +73,7 @@ namespace Galaga
                     // update game logic here...
                     eventBus.ProcessEvents();
                     player.Move();
+                    //enemies.
                     IterateShots();
                 }
 
