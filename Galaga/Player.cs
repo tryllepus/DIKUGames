@@ -16,7 +16,7 @@ namespace Galaga
         public Vec2F Shape { get { return this.shape.Position; } }
 
         public Player(DynamicShape shape, IBaseImage image)
-        {   
+        {
             entity = new Entity(shape, image);
             this.shape = shape;
             this.moveRight = 0.0f;
@@ -62,7 +62,7 @@ namespace Galaga
             // TODO: set moveLeft appropriately and call UpdateMovement()
             if (val == true)
             {
-                moveLeft =- MOVEMENT_SPEED;
+                moveLeft = -MOVEMENT_SPEED;
                 UpdateDirection();
             }
             else
@@ -77,7 +77,7 @@ namespace Galaga
             // TODO:set moveRight appropriately and call UpdateMovement()
             if (val == true)
             {
-                moveRight =+ MOVEMENT_SPEED;
+                moveRight = +MOVEMENT_SPEED;
                 UpdateDirection();
             }
             else
@@ -90,7 +90,7 @@ namespace Galaga
         {
             if (val == true)
             {
-                moveDown =- MOVEMENT_SPEED;
+                moveDown = -MOVEMENT_SPEED;
                 UpdateDirection();
             }
             else
@@ -103,7 +103,7 @@ namespace Galaga
         {
             if (val == true)
             {
-                moveUp =+ MOVEMENT_SPEED;
+                moveUp = +MOVEMENT_SPEED;
                 UpdateDirection();
             }
             else
