@@ -1,0 +1,54 @@
+<diagram program="umletino" version="14.4.0-SNAPSHOT"><zoom_level>10</zoom_level><help_text>kfnkfn
+
+</help_text><element><id>UMLClass</id><coordinates><x>160</x><y>179</y><w>210</w><h>310</h></coordinates><panel_attributes>Game
+--
+- player: Player
+- window: Window
+- gameTimer: GameTimer
+- eventBus: GameEventBus&lt;object&gt;
+- enemies: EntityContainer&lt;enemy&gt;
+- playerShots: EntiryContainer
+- playerShotImage: IBaseImage
+- enemyExplosions: AnimationContainer
+- explosionStrides: List&lt;Image&gt;
+- EXPLOSION_LENGTH_MS: const int
+
+--
++ Run()
++ keyPress()
++ keyRelease()
++ processEvent()
++ addNewShots()
+- iterateShots()
++ addExplosion()
+
+#Operation(i: int): int
+/+AbstractOperation()/
+--
+Responsibilities
+-- Resp1
+*-- Resp2*</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLInterface</id><coordinates><x>10</x><y>50</y><w>160</w><h>90</h></coordinates><panel_attributes>IGameEventProcessor&lt;T&gt;
+--
++ process()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>170</x><y>90</y><w>100</w><h>110</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;80;10;80;90</additional_attributes></element><element><id>UMLClass</id><coordinates><x>470</x><y>70</y><w>500</w><h>280</h></coordinates><panel_attributes>GameEventBus&lt;T&gt;
+--
+- _eventProcessors: Dictionary&lt;GameEventType, ICollection&lt;IGameEventProcessor&lt;T&gt;&gt;&gt;
+
+- _eventQueues: Dictionary&lt;GameEventType, GameEventQueue&lt;GameEvent&lt;T&gt;&gt;&gt;
+
+- _breakExecution: bool
+--
++ InitializeEventBus()
++ Subscribe()
++ Unsubscribe()
++ RegisterEvent()
++ ProcessEvents()
++ ProcessEventsSequentially()
++ ProcessEvents()
++ ProcessEventsSequentially()
++ BreakProcessing()
++ ResetbreakProcessing()
++ Flush()
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>360</x><y>120</y><w>130</w><h>330</h></coordinates><panel_attributes>lt=-
+m1=0..n
+m2=0..1
+teaches to &gt;</panel_attributes><additional_attributes>10;300;40;300;40;10;110;10</additional_attributes></element></diagram>
