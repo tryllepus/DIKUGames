@@ -62,12 +62,13 @@ namespace Galaga
             // TODO: set moveLeft appropriately and call UpdateMovement()
             if (val == true)
             {
-                moveLeft -= MOVEMENT_SPEED;
+                moveLeft =- MOVEMENT_SPEED;
                 UpdateDirection();
             }
             else
             {
-                moveLeft -= 0.0f;
+                moveLeft = 0.0f;
+                UpdateDirection();
             }
 
         }
@@ -76,50 +77,49 @@ namespace Galaga
             // TODO:set moveRight appropriately and call UpdateMovement()
             if (val == true)
             {
-                moveRight += MOVEMENT_SPEED;
+                moveRight =+ MOVEMENT_SPEED;
                 UpdateDirection();
             }
             else
             {
-                moveRight += 0.0f;
+                moveRight = 0.0f;
+                UpdateDirection();
             }
         }
         public void SetMoveDown(bool val)
         {
             if (val == true)
             {
-                moveDown += MOVEMENT_SPEED;
+                moveDown =- MOVEMENT_SPEED;
                 UpdateDirection();
             }
             else
             {
-                moveDown += 0.0f;
+                moveDown = 0.0f;
+                UpdateDirection();
             }
         }
         public void SetMoveUp(bool val)
         {
             if (val == true)
             {
-                moveUp += MOVEMENT_SPEED;
+                moveUp =+ MOVEMENT_SPEED;
                 UpdateDirection();
             }
             else
             {
-                moveUp += 0.0f;
+                moveUp = 0.0f;
+                UpdateDirection();
             }
         }
 
         private void UpdateDirection()
         {
-            this.shape.Position.X = moveLeft + moveRight;
+            this.shape.Direction.X = moveLeft + moveRight;
 
-            if (moveDown >= 0.0f)
+            if (moveDown >= 0.0f || moveUp >= 0.0f)
             {
-                this.shape.Position.Y -= moveDown;
-            }
-            if (moveUp >= 0.0f)
-            {
-                this.shape.Position.Y += moveUp;
+                this.shape.Direction.Y = moveDown + moveUp;
             }
         }
 
