@@ -13,8 +13,6 @@ namespace Galaga
         private Player player;
         private float MOVEMENT_SPEED = 0.01f;
         private float New_MOVEMENT_SPEED = 0.0f;
-        private float wavePeriod = 0.045f;
-        private float amplitude = 0.05f;
         public int hitPoints { get; private set; }
         public int hitMark { get; private set; }
         public int thresholdHP { get; private set; }
@@ -33,19 +31,6 @@ namespace Galaga
 
         }
 
-        public void MoveEnemy(Enemy enemy)
-        {
-            enemy.Shape.Position.Y -= MOVEMENT_SPEED;
-            enemy.Shape.Position.X = enemy.StartPosition.X + amplitude *
-                            (float)Math.Sin((2 * Math.PI *
-                            (enemy.StartPosition.Y - enemy.Shape.Position.Y)) /
-                            wavePeriod);
-        }
-        public void MoveEnemies(EntityContainer<Enemy> enemies)
-        {
-            enemies.Iterate(MoveEnemy);
-        }
-
         /// <summary>
         /// Enemy should lose hitpoints upon collision with a playerShot
         /// </summary>
@@ -62,6 +47,7 @@ namespace Galaga
                 critCondition = true;
                 this.Image = enemyStridesRed;
                 New_MOVEMENT_SPEED = 2 * MOVEMENT_SPEED;
+                MOVEMENT_SPEED = New_MOVEMENT_SPEED;
             }
         }
         public bool isDead()

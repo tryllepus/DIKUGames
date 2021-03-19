@@ -9,13 +9,22 @@ using System.Collections.Generic;
 using DIKUArcade.EventBus;
 using DIKUArcade.Physics;
 using Galaga;
+using Galaga.MovementStrategy;
+using Galaga.Squadrons;
 
 namespace Galaga
 {
     public class Game : IGameEventProcessor<object>
     {
         private Player player;
+        private List<ISquadron> bandidosSquadron;
+        private List<Image> greenBandits;
+        private List<Image> redBandits;
+        private List<Image> blueBandits;
+        private Score score;
+        private Text display;
         private Window window;
+        private MoveZigzagDown zigzagDown;
         private GameTimer gameTimer;
         private GameEventBus<object> eventBus;
         private EntityContainer<Enemy> enemies;
@@ -43,7 +52,7 @@ namespace Galaga
             eventBus.Subscribe(GameEventType.InputEvent, this);
             eventBus.Subscribe(GameEventType.PlayerEvent, player);
 
-
+            zigzagDown = new MoveZigzagDown();
 
 
             var images = ImageStride.CreateStrides(4, Path.Combine("Assets", "Images", "BlueMonster.png"));
@@ -56,6 +65,7 @@ namespace Galaga
                     new Vec2F(0.1f, 0.1f)),
                     new ImageStride(80, images)));
             }
+            zigzagDown.MoveEnemies(enemies);
 
 
             playerShots = new EntityContainer();
@@ -67,6 +77,19 @@ namespace Galaga
 
             enemyStridesRed = ImageStride.CreateStrides(2,
                     Path.Combine("Assets", "Images", "RedMonster.png"));
+
+
+            score = new Score(new Vec2F(0.45f, 0.1f), new Vec2F(0.1f, 0.1f));
+            display = new Text("SCORE POINTS", new Vec2F(0.3f, 0.5f), new Vec2F(0.2f, 0.3f));
+
+            greenBandits = ImageStride.CreateStrides(3,
+                Path.Combine("Assets", "Images", "GreenMonster.png"));
+
+            redBandits = ImageStride.CreateStrides(2,
+                Path.Combine("Assets", "Images", "RedMonster.png"));
+
+            blueBandits = ImageStride.CreateStrides(3,
+                Path.Combine("Assets", "Images", "BlueMonster.png"));
 
 
         }
@@ -89,12 +112,15 @@ namespace Galaga
                 if (gameTimer.ShouldRender())
                 {
                     window.Clear();
+                    score.RenderScore();
+                    display.RenderText();
                     player.Render();
                     enemies.RenderEntities();
                     playerShots.RenderEntities();
                     enemyExplosions.RenderAnimations();
                     // render game entities here...
                     window.SwapBuffers();
+                    zigzagDown.MoveEnemies(enemies);
                 }
 
                 if (gameTimer.ShouldReset())
@@ -260,6 +286,7 @@ namespace Galaga
                     }
                 }
             });
+
         }
 
 
@@ -270,6 +297,10 @@ namespace Galaga
                 new StationaryShape(position, extent), EXPLOSION_LENGTH_MS,
                 new ImageStride(EXPLOSION_LENGTH_MS / 8, explosionStrides)
             );
+
+        }
+        public void IncreaseDifficulty()
+        {
 
         }
 
