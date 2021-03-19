@@ -19,17 +19,7 @@ namespace Galaga
         public int hitMark { get; private set; }
         public int thresholdHP { get; private set; }
         private IBaseImage enemyStridesRed;
-        public bool critCondition
-        {
-            get { return critCondition; }
-            private set
-            {
-                if (hitPoints <= thresholdHP)
-                {
-                    critCondition = true;
-                }
-            }
-        }
+        public bool critCondition { get; private set; }
 
         public Enemy(DynamicShape shape, IBaseImage image)
             : base(shape, image)
@@ -67,8 +57,9 @@ namespace Galaga
         }
         public void Criticalhealth()
         {
-            if (critCondition)
+            if (hitPoints <= thresholdHP)
             {
+                critCondition = true;
                 this.Image = enemyStridesRed;
                 New_MOVEMENT_SPEED = 2 * MOVEMENT_SPEED;
             }

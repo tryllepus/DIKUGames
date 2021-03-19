@@ -248,7 +248,7 @@ namespace Galaga
                                     new Vec2F(enemy.Shape.Extent.X, enemy.Shape.Extent.Y));
                                 shot.DeleteEntity();
                                 enemy.HitMarker();
-                                //enemy.Criticalhealth();
+                                enemy.Criticalhealth();
                                 if (enemy.isDead())
                                 {
                                     enemy.DeleteEntity();
