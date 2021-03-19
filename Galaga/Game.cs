@@ -8,6 +8,7 @@ using DIKUArcade.Math;
 using System.Collections.Generic;
 using DIKUArcade.EventBus;
 using DIKUArcade.Physics;
+using Galaga;
 
 namespace Galaga
 {
@@ -23,21 +24,27 @@ namespace Galaga
         private AnimationContainer enemyExplosions;
         private List<Image> explosionStrides;
         private const int EXPLOSION_LENGTH_MS = 500;
+        private List<Image> enemyStridesRed;
         public Game()
         {
             window = new Window("Galaga", 500, 500);
             gameTimer = new GameTimer(30, 30);
-
             player = new Player(new DynamicShape(
                         new Vec2F(0.45f, 0.1f), new Vec2F(0.1f, 0.1f)),
                         new Image(Path.Combine("Assets", "Images", "Player.png")));
 
             eventBus = new GameEventBus<object>();
-            eventBus.InitializeEventBus(new List<GameEventType> { GameEventType.
-            InputEvent });
+            eventBus.InitializeEventBus(new List<GameEventType>() {
+                 GameEventType.InputEvent,
+                 GameEventType.PlayerEvent,
+                 GameEventType.WindowEvent});
 
             window.RegisterEventBus(eventBus);
             eventBus.Subscribe(GameEventType.InputEvent, this);
+            eventBus.Subscribe(GameEventType.PlayerEvent, player);
+
+
+
 
             var images = ImageStride.CreateStrides(4, Path.Combine("Assets", "Images", "BlueMonster.png"));
             const int numEnemies = 8;
@@ -51,13 +58,15 @@ namespace Galaga
             }
 
 
-            playerShots = new DIKUArcade.Entities.EntityContainer();
+            playerShots = new EntityContainer();
             playerShotImage = new Image(Path.Combine("Assets", "Images", "BulletRed2.png"));
-
 
             enemyExplosions = new AnimationContainer(numEnemies);
             explosionStrides = ImageStride.CreateStrides(8,
                 Path.Combine("Assets", "Images", "Explosion.png"));
+
+            enemyStridesRed = ImageStride.CreateStrides(2,
+                    Path.Combine("Assets", "Images", "RedMonster.png"));
 
 
         }
@@ -102,16 +111,32 @@ namespace Galaga
             switch (key)
             {
                 case "KEY_LEFT":
-                    player.SetMoveLeft(true);
+                    eventBus.RegisterEvent(
+                            GameEventFactory<object>.CreateGameEventForAllProcessors(
+                                GameEventType.PlayerEvent, this,
+                                    "KEY_LEFT", "KEY_PRESS", " "));
+                    //player.SetMoveLeft(true);
                     break;
                 case "KEY_RIGHT":
-                    player.SetMoveRight(true);
+                    eventBus.RegisterEvent(
+                            GameEventFactory<object>.CreateGameEventForAllProcessors(
+                                GameEventType.PlayerEvent, this,
+                                    "KEY_RIGHT", "KEY_PRESS", " "));
+                    //player.SetMoveRight(true);
                     break;
                 case "KEY_UP":
-                    player.SetMoveUp(true);
+                    eventBus.RegisterEvent(
+                           GameEventFactory<object>.CreateGameEventForAllProcessors(
+                               GameEventType.PlayerEvent, this,
+                                   "KEY_UP", "KEY_PRESS", " "));
+                    //player.SetMoveUp(true);
                     break;
                 case "KEY_DOWN":
-                    player.SetMoveDown(true);
+                    eventBus.RegisterEvent(
+                           GameEventFactory<object>.CreateGameEventForAllProcessors(
+                               GameEventType.PlayerEvent, this,
+                                   "KEY_DOWN", "KEY_PRESS", " "));
+                    //player.SetMoveDown(true);
                     break;
                 case "KEY_SPACE":
                     IterateShots();
@@ -121,7 +146,6 @@ namespace Galaga
                     break;
             }
         }
-
         public void KeyRelease(string key)
         {
             // TODO: switch on key string and disable the player's move direction
@@ -129,20 +153,41 @@ namespace Galaga
             switch (key)
             {
                 case "KEY_LEFT":
-                    player.SetMoveLeft(false);
+                    eventBus.RegisterEvent(
+                            GameEventFactory<object>.CreateGameEventForAllProcessors(
+                                GameEventType.PlayerEvent, this,
+                                    "KEY_LEFT", "KEY_RELEASE", " "));
+                    //player.SetMoveLeft(false);
                     break;
                 case "KEY_RIGHT":
-                    player.SetMoveRight(false);
+                    eventBus.RegisterEvent(
+                            GameEventFactory<object>.CreateGameEventForAllProcessors(
+                                GameEventType.PlayerEvent, this,
+                                            "KEY_RIGHT", "KEY_RELEASE", " "));
+                    //player.SetMoveRight(false);
                     break;
                 case "KEY_UP":
-                    player.SetMoveUp(false);
+                    //player.SetMoveUp(false);
+                    eventBus.RegisterEvent(
+                            GameEventFactory<object>.CreateGameEventForAllProcessors(
+                                GameEventType.PlayerEvent, this,
+                                    "KEY_UP", "KEY_RELEASE", " "));
                     break;
                 case "KEY_DOWN":
-                    player.SetMoveDown(false);
+                    //player.SetMoveDown(false);
+                    eventBus.RegisterEvent(
+                            GameEventFactory<object>.CreateGameEventForAllProcessors(
+                                GameEventType.PlayerEvent, this,
+                                    "KEY_DOWN", "KEY_RELEASE", " "));
                     break;
                 case "KEY_ESCAPE":
+                    eventBus.RegisterEvent(
+                            GameEventFactory<object>.CreateGameEventForAllProcessors(
+                                GameEventType.PlayerEvent, this,
+                                    "KEY_ESCAPE", "KEY_RELEASE", " "));
                     window.CloseWindow();
                     break;
+
                 case "KEY_SPACE":
                     AddNewShot();
                     break;
@@ -202,12 +247,18 @@ namespace Galaga
                                 AddExplosion(new Vec2F(enemy.Shape.Position.X, enemy.Shape.Position.Y),
                                     new Vec2F(enemy.Shape.Extent.X, enemy.Shape.Extent.Y));
                                 shot.DeleteEntity();
-                                enemy.DeleteEntity();
+                                enemy.HitMarker();
+                                //enemy.Criticalhealth();
+                                if (enemy.isDead())
+                                {
+                                    enemy.DeleteEntity();
+
+                                }
                             }
+
                         });
                     }
                 }
-
             });
         }
 

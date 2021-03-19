@@ -1,18 +1,82 @@
+using System;
+using System.IO;
 using DIKUArcade.Entities;
 using DIKUArcade.Graphics;
 using DIKUArcade.Math;
+using DIKUArcade.Physics;
 
 namespace Galaga
 {
     public class Enemy : Entity
     {
         public Vec2F StartPosition { get; }
+        private Player player;
+        private float MOVEMENT_SPEED = 0.01f;
+        private float New_MOVEMENT_SPEED = 0.0f;
+        private float wavePeriod = 0.045f;
+        private float amplitude = 0.05f;
+        public int hitPoints { get; private set; }
+        public int hitMark { get; private set; }
+        public int thresholdHP { get; private set; }
+        private IBaseImage enemyStridesRed;
+        public bool critCondition
+        {
+            get { return critCondition; }
+            private set
+            {
+                if (hitPoints <= thresholdHP)
+                {
+                    critCondition = true;
+                }
+            }
+        }
+
         public Enemy(DynamicShape shape, IBaseImage image)
             : base(shape, image)
         {
             this.StartPosition = shape.Position.Copy();
+            this.hitPoints = 100;
+            this.thresholdHP = 30;
+            hitMark = 20;
+
+            this.enemyStridesRed = new Image(Path.Combine("Assets", "Images", "RedMonster.png"));
+
         }
 
+        public void MoveEnemy(Enemy enemy)
+        {
+            enemy.Shape.Position.Y -= MOVEMENT_SPEED;
+            enemy.Shape.Position.X = enemy.StartPosition.X + amplitude *
+                            (float)Math.Sin((2 * Math.PI *
+                            (enemy.StartPosition.Y - enemy.Shape.Position.Y)) /
+                            wavePeriod);
+        }
+        public void MoveEnemies(EntityContainer<Enemy> enemies)
+        {
+            enemies.Iterate(MoveEnemy);
+        }
+
+        /// <summary>
+        /// Enemy should lose hitpoints upon collision with a playerShot
+        /// </summary>
+        public void HitMarker()
+        {
+            {
+                hitPoints -= hitMark;
+            }
+        }
+        public void Criticalhealth()
+        {
+            if (critCondition)
+            {
+                this.Image = enemyStridesRed;
+                New_MOVEMENT_SPEED = 2 * MOVEMENT_SPEED;
+            }
+        }
+        public bool isDead()
+        {
+            return hitPoints <= 0;
+        }
 
     }
 }

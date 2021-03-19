@@ -1,11 +1,15 @@
+using System.Collections.Generic;
+using System.IO;
 using DIKUArcade.Entities;
+using DIKUArcade.EventBus;
 using DIKUArcade.Graphics;
 using DIKUArcade.Math;
 
 namespace Galaga
 {
-    public class Player
+    public class Player : IGameEventProcessor<object>
     {
+        private Entity player;
         private float moveRight;
         private float moveLeft;
         private float moveUp;
@@ -23,11 +27,13 @@ namespace Galaga
             this.moveLeft = 0.0f;
             this.moveDown = 0.0f;
             this.moveUp = 0.0f;
+
         }
 
         public Vec2F getPos()
         {
-            return this.shape.Position;
+            return new Vec2F(shape.Position.X + (shape.Extent.X / 2),
+                 shape.Position.Y);//this.shape.Position;
         }
         public void Render()
         {
@@ -47,7 +53,6 @@ namespace Galaga
             {
                 this.shape.Position.X = 1.0f - this.shape.Extent.X;
             }
-
             if (this.shape.Position.Y <= 0.0f)
             {
                 this.shape.Position.Y = 0.0f;
@@ -112,7 +117,6 @@ namespace Galaga
                 UpdateDirection();
             }
         }
-
         private void UpdateDirection()
         {
             this.shape.Direction.X = moveLeft + moveRight;
@@ -120,6 +124,59 @@ namespace Galaga
             if (moveDown >= 0.0f || moveUp >= 0.0f)
             {
                 this.shape.Direction.Y = moveDown + moveUp;
+            }
+        }
+
+        public void ProcessEvent(GameEventType eventType, GameEvent<object> gameEvent)
+        {
+            if (eventType == GameEventType.PlayerEvent)
+            {
+                switch (gameEvent.Parameter1)
+                {
+                    /* case "CLOSE_WINDOW":
+                         window.CloseWindow();
+                         break;*/
+                    case "KEY_PRESS":
+                        switch (gameEvent.Message)
+                        {
+                            case "KEY_RIGHT":
+                                this.SetMoveRight(true);
+                                break;
+                            case "KEY_LEFT":
+                                this.SetMoveLeft(true);
+                                break;
+
+                            case "KEY_UP":
+                                this.SetMoveUp(true);
+                                break;
+
+                            case "KEY_DOWN":
+                                this.SetMoveDown(true);
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+
+                    case "KEY_RELEASE":
+                        switch (gameEvent.Message)
+                        {
+                            case "KEY_RIGHT":
+                                this.SetMoveRight(false);
+                                break;
+                            case "KEY_LEFT":
+                                this.SetMoveLeft(false);
+                                break;
+                            case "KEY_UP":
+                                this.SetMoveUp(false);
+                                break;
+                            case "KEY_DOWN":
+                                this.SetMoveDown(false);
+                                break;
+                        }
+                        break;
+
+                }
             }
         }
 
