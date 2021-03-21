@@ -14,7 +14,7 @@ namespace Galaga
         private float moveLeft;
         private float moveUp;
         private float moveDown;
-        private const float MOVEMENT_SPEED = 0.01f;
+        private const float MOVEMENT_SPEED = 0.03f;
         private Entity entity;
         private DynamicShape shape;
         public Vec2F Shape { get { return this.shape.Position; } }
@@ -33,7 +33,7 @@ namespace Galaga
         public Vec2F getPos()
         {
             return new Vec2F(shape.Position.X + (shape.Extent.X / 2),
-                 shape.Position.Y);//this.shape.Position;
+                 shape.Position.Y);
         }
         public void Render()
         {

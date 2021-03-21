@@ -16,7 +16,8 @@ namespace Galaga.Squadrons
             Enemies = new EntityContainer<Enemy>();
         }
 
-        public void CreateEnemies(List<Image> enemyStrides, List<Image> alternativeEnemyStrides)
+        /*
+        public void CreateEnemies(List<Image> enemyStrides)
         {
             var bandits = new List<Enemy>();
             for (float x = 0.15f, y = 0.6f; x <= 0.3f; x += 0.15f, y += 0.2f)
@@ -31,5 +32,26 @@ namespace Galaga.Squadrons
                 }
             }
         }
+        */
+
+
+
+        public void CreateEnemies(List<Image> enemyStrides, List<Image> alternativeEnemyStrides)
+        {
+            var bandits = new List<Enemy>();
+            for (float x = 0.15f, y = 0.6f; x <= 0.3f; x += 0.15f, y += 0.2f)
+            {
+                bandits.Add(new Enemy(
+                    new DynamicShape(new Vec2F(x, y), new Vec2F(0.1f, 0.1f)),
+                    new ImageStride(80, enemyStrides)));
+
+                for (int i = 0; i < MaxEnemies - 1; i++)
+                {
+                    Enemies.AddEntity(bandits[i]);
+                }
+            }
+        }
+
+
     }
 }

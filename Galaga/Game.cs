@@ -1,4 +1,6 @@
 using System;
+using OpenTK;
+using OpenTK.Graphics;
 using DIKUArcade;
 using DIKUArcade.Timers;
 using System.IO;
@@ -11,6 +13,8 @@ using DIKUArcade.Physics;
 using Galaga;
 using Galaga.MovementStrategy;
 using Galaga.Squadrons;
+using GalagaStates;
+using OpenTK.Windowing.Desktop;
 
 namespace Galaga
 {
@@ -21,6 +25,8 @@ namespace Galaga
         private List<Image> greenBandits;
         private List<Image> redBandits;
         private List<Image> blueBandits;
+        private List<List<Image>> typesOfEnemy;
+        private List<List<Image>> alternativeEnemyStrides;
         private Score score;
         private Text display;
         private Window window;
@@ -34,13 +40,17 @@ namespace Galaga
         private List<Image> explosionStrides;
         private const int EXPLOSION_LENGTH_MS = 500;
         private List<Image> enemyStridesRed;
+        private StateMachine stateMachine;
         public Game()
         {
+            stateMachine = new StateMachine();
             window = new Window("Galaga", 500, 500);
             gameTimer = new GameTimer(30, 30);
+            //TODO mute from to here
             player = new Player(new DynamicShape(
                         new Vec2F(0.45f, 0.1f), new Vec2F(0.1f, 0.1f)),
                         new Image(Path.Combine("Assets", "Images", "Player.png")));
+            //TODO mute to here
 
             eventBus = new GameEventBus<object>();
             eventBus.InitializeEventBus(new List<GameEventType>() {
@@ -52,9 +62,9 @@ namespace Galaga
             eventBus.Subscribe(GameEventType.InputEvent, this);
             eventBus.Subscribe(GameEventType.PlayerEvent, player);
 
-            zigzagDown = new MoveZigzagDown();
 
 
+            //TODO mute from here
             var images = ImageStride.CreateStrides(4, Path.Combine("Assets", "Images", "BlueMonster.png"));
             const int numEnemies = 8;
             enemies = new EntityContainer<Enemy>(numEnemies);
@@ -65,13 +75,15 @@ namespace Galaga
                     new Vec2F(0.1f, 0.1f)),
                     new ImageStride(80, images)));
             }
-            zigzagDown.MoveEnemies(enemies);
+            zigzagDown = new MoveZigzagDown();
+
 
 
             playerShots = new EntityContainer();
             playerShotImage = new Image(Path.Combine("Assets", "Images", "BulletRed2.png"));
-
             enemyExplosions = new AnimationContainer(numEnemies);
+            //TODO mute to here
+
             explosionStrides = ImageStride.CreateStrides(8,
                 Path.Combine("Assets", "Images", "Explosion.png"));
 
@@ -82,6 +94,11 @@ namespace Galaga
             score = new Score(new Vec2F(0.45f, 0.1f), new Vec2F(0.1f, 0.1f));
             display = new Text("SCORE POINTS", new Vec2F(0.3f, 0.5f), new Vec2F(0.2f, 0.3f));
 
+            //TODO mute from here
+
+            bandidosSquadron = new List<ISquadron>() {new GreenSquadron(),
+                                 new RedSquadron(), new BlueSquadron()};
+
             greenBandits = ImageStride.CreateStrides(3,
                 Path.Combine("Assets", "Images", "GreenMonster.png"));
 
@@ -90,6 +107,18 @@ namespace Galaga
 
             blueBandits = ImageStride.CreateStrides(3,
                 Path.Combine("Assets", "Images", "BlueMonster.png"));
+
+            typesOfEnemy = new List<List<Image>>() { greenBandits, redBandits, blueBandits };
+            alternativeEnemyStrides = new List<List<Image>>() { };
+
+            //TODO mute to here
+
+            for (int i = 0; i < bandidosSquadron.Count - 1; i++)
+            {
+                //! is not working
+                bandidosSquadron[i].CreateEnemies(typesOfEnemy[i], alternativeEnemyStrides[i]);
+            }
+
 
 
         }
@@ -101,26 +130,42 @@ namespace Galaga
                 gameTimer.MeasureTime();
                 while (gameTimer.ShouldUpdate())
                 {
+
                     window.PollEvents();
                     // update game logic here...
-                    eventBus.ProcessEvents();
-                    player.Move();
-                    //enemies.
+                    //GalagaBus.GetBus().ProcessEvents(); //! when GalagaBus.cs is on, then umute
+                    eventBus.ProcessEvents();  //! mute when galaga.cs takes over
+                                               //stateMachine.ActiveState.UpdateGameLogic();//! when gamerunning.cs is on, then umute
+
+                    //TODO mute from here
                     IterateShots();
+                    player.Move();
+                    //TODO mute to here
+                    zigzagDown.MoveEnemies(enemies);    //!WORKS FINE
+                    for (int i = 0; i < bandidosSquadron.Count; i++)
+                    {
+                        zigzagDown.MoveEnemies(bandidosSquadron[i].Enemies);
+                    }
                 }
 
                 if (gameTimer.ShouldRender())
                 {
                     window.Clear();
-                    score.RenderScore();
-                    display.RenderText();
+                    //stateMachine.ActiveState.RenderState(); //! when gamerunning.cs is on, then umute
+                    //score.RenderScore();  //TODO mute
+                    //display.RenderText(); //TODO mute
                     player.Render();
                     enemies.RenderEntities();
+
                     playerShots.RenderEntities();
                     enemyExplosions.RenderAnimations();
-                    // render game entities here...
+                    for (int i = 0; i < bandidosSquadron.Count; i++)
+                    {
+                        bandidosSquadron[i].Enemies.RenderEntities();
+                    }
+
+                    // render game entities here... 
                     window.SwapBuffers();
-                    zigzagDown.MoveEnemies(enemies);
                 }
 
                 if (gameTimer.ShouldReset())
@@ -133,7 +178,8 @@ namespace Galaga
 
         public void KeyPress(string key)
         {
-            // TODO: switch on key string and set the player's move direction
+            // TODO mute from here
+            //switch on key string and set the player's move direction
             switch (key)
             {
                 case "KEY_LEFT":
@@ -171,10 +217,14 @@ namespace Galaga
                 default:
                     break;
             }
+            //TODO mute to here
         }
+
+
         public void KeyRelease(string key)
         {
-            // TODO: switch on key string and disable the player's move direction
+            // TODO mute from here
+            // switch on key string and disable the player's move direction
             // TODO: Close window if escape is pressed
             switch (key)
             {
@@ -221,6 +271,8 @@ namespace Galaga
                 default:
                     break;
             }
+
+            //TODO mute to here
         }
 
         public void ProcessEvent(GameEventType type, GameEvent<object> gameEvent)
@@ -240,8 +292,9 @@ namespace Galaga
         }
         public void AddNewShot()
         {
-            var shot = new DynamicShape(new Vec2F(player.getPos().X, player.getPos().Y), //+ 0.008f, player.Shape.Y + 0.01f),
-                new Vec2F(0.008f, 0.021f));
+            var shot = new DynamicShape(new Vec2F(player.getPos().X,
+                 player.getPos().Y), //+ 0.008f, player.Shape.Y + 0.01f),
+                    new Vec2F(0.008f, 0.021f));
 
             playerShots.AddDynamicEntity(shot, playerShotImage);
 
@@ -256,7 +309,7 @@ namespace Galaga
                     shot.Shape.Move();
                     ((DynamicShape)shot.Shape).Direction.Y += 0.02f;
 
-                    /* TODO: guard against window borders */
+                    // guard against window borders 
                     if (shot.Shape.Position.Y > 1.0f)
                     {
                         // TODO: delete shot
@@ -264,6 +317,10 @@ namespace Galaga
                     }
                     else
                     {
+                        //TODO below should be adden once ISquardonis on!
+                        //for (int i = 0; i < bandidosSquadron.Count; i++)
+                        // {
+                        //bandidosSquadron[i].
                         enemies.Iterate(enemy =>
                         {
                             // TODO: if collision btw shot and enemy -> delete both
@@ -283,6 +340,9 @@ namespace Galaga
                             }
 
                         });
+                        // }
+
+
                     }
                 }
             });
