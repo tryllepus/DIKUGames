@@ -24,8 +24,8 @@ namespace Galaga
         {
             this.StartPosition = shape.Position.Copy();
             this.hitPoints = 100;
-            this.thresholdHP = 30;
-            hitMark = 20;
+            this.thresholdHP = 25;
+            hitMark = 25;
 
             this.enemyStridesRed = new Image(Path.Combine("Assets", "Images", "RedMonster.png"));
 
@@ -53,6 +53,17 @@ namespace Galaga
         public bool isDead()
         {
             return hitPoints <= 0;
+        }
+        public bool EnemyWins()
+        {
+            if (this.Shape.Position == new Vec2F(0.1f, 0.1f))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
     }

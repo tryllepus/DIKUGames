@@ -1,6 +1,4 @@
 using System;
-using OpenTK;
-using OpenTK.Graphics;
 using DIKUArcade;
 using DIKUArcade.Timers;
 using System.IO;
@@ -14,23 +12,25 @@ using Galaga;
 using Galaga.MovementStrategy;
 using Galaga.Squadrons;
 using GalagaStates;
-using OpenTK.Windowing.Desktop;
 
 namespace Galaga
 {
     public class Game : IGameEventProcessor<object>
     {
         private Player player;
-        private List<ISquadron> bandidosSquadron;
+        private GreenSquadron greenB;
+        private RedSquadron redB;
+        private BlueSquadron blueB;
         private List<Image> greenBandits;
         private List<Image> redBandits;
         private List<Image> blueBandits;
         private List<List<Image>> typesOfEnemy;
-        private List<List<Image>> alternativeEnemyStrides;
         private Score score;
-        private Text display;
+        private GameOver gameOver;
         private Window window;
         private MoveZigzagDown zigzagDown;
+        private MoveDown moveDown;
+        private NoMove noMove;
         private GameTimer gameTimer;
         private GameEventBus<object> eventBus;
         private EntityContainer<Enemy> enemies;
@@ -41,6 +41,10 @@ namespace Galaga
         private const int EXPLOSION_LENGTH_MS = 500;
         private List<Image> enemyStridesRed;
         private StateMachine stateMachine;
+        private Random random;
+        private int movingNum;
+        private int levelCount;
+        private int deadCount;
         public Game()
         {
             stateMachine = new StateMachine();
@@ -66,8 +70,10 @@ namespace Galaga
 
             //TODO mute from here
             var images = ImageStride.CreateStrides(4, Path.Combine("Assets", "Images", "BlueMonster.png"));
-            const int numEnemies = 8;
-            enemies = new EntityContainer<Enemy>(numEnemies);
+            const int numEnemies = 7;
+            enemies = new EntityContainer<Enemy>(150);
+
+            /*
             for (int i = 0; i < numEnemies; i++)
             {
                 enemies.AddEntity(new Enemy(
@@ -75,7 +81,11 @@ namespace Galaga
                     new Vec2F(0.1f, 0.1f)),
                     new ImageStride(80, images)));
             }
+            */
+
             zigzagDown = new MoveZigzagDown();
+            moveDown = new MoveDown();
+            noMove = new NoMove();
 
 
 
@@ -90,14 +100,13 @@ namespace Galaga
             enemyStridesRed = ImageStride.CreateStrides(2,
                     Path.Combine("Assets", "Images", "RedMonster.png"));
 
-
-            score = new Score(new Vec2F(0.45f, 0.1f), new Vec2F(0.1f, 0.1f));
-            display = new Text("SCORE POINTS", new Vec2F(0.3f, 0.5f), new Vec2F(0.2f, 0.3f));
+            score = new Score(new Vec2F(0.1f, 0.6f), new Vec2F(0.3f, 0.3f));
+            gameOver = new GameOver(new Vec2F(0.5f, 0.5f), new Vec2F(0.1f, 0.1f));
 
             //TODO mute from here
-
-            bandidosSquadron = new List<ISquadron>() {new GreenSquadron(),
-                                 new RedSquadron(), new BlueSquadron()};
+            redB = new RedSquadron();
+            blueB = new BlueSquadron();
+            greenB = new GreenSquadron();
 
             greenBandits = ImageStride.CreateStrides(3,
                 Path.Combine("Assets", "Images", "GreenMonster.png"));
@@ -109,16 +118,12 @@ namespace Galaga
                 Path.Combine("Assets", "Images", "BlueMonster.png"));
 
             typesOfEnemy = new List<List<Image>>() { greenBandits, redBandits, blueBandits };
-            alternativeEnemyStrides = new List<List<Image>>() { };
 
             //TODO mute to here
 
-            for (int i = 0; i < bandidosSquadron.Count - 1; i++)
-            {
-                //! is not working
-                bandidosSquadron[i].CreateEnemies(typesOfEnemy[i], alternativeEnemyStrides[i]);
-            }
-
+            levelCount = 0;
+            deadCount = 0;
+            random = new Random();
 
 
         }
@@ -130,7 +135,6 @@ namespace Galaga
                 gameTimer.MeasureTime();
                 while (gameTimer.ShouldUpdate())
                 {
-
                     window.PollEvents();
                     // update game logic here...
                     //GalagaBus.GetBus().ProcessEvents(); //! when GalagaBus.cs is on, then umute
@@ -140,32 +144,48 @@ namespace Galaga
                     //TODO mute from here
                     IterateShots();
                     player.Move();
+                    NextRound();
                     //TODO mute to here
-                    zigzagDown.MoveEnemies(enemies);    //!WORKS FINE
-                    for (int i = 0; i < bandidosSquadron.Count; i++)
+
+                    switch (movingNum)
                     {
-                        zigzagDown.MoveEnemies(bandidosSquadron[i].Enemies);
+                        case 1:
+                            zigzagDown.MoveEnemies(enemies);
+                            break;
+                        case 2:
+                            moveDown.MoveEnemies(enemies);
+                            break;
+                        case 3:
+                            noMove.MoveEnemies(enemies);
+                            break;
                     }
+
                 }
 
                 if (gameTimer.ShouldRender())
                 {
-                    window.Clear();
-                    //stateMachine.ActiveState.RenderState(); //! when gamerunning.cs is on, then umute
-                    //score.RenderScore();  //TODO mute
-                    //display.RenderText(); //TODO mute
-                    player.Render();
-                    enemies.RenderEntities();
-
-                    playerShots.RenderEntities();
-                    enemyExplosions.RenderAnimations();
-                    for (int i = 0; i < bandidosSquadron.Count; i++)
+                    IsGameOver();
+                    if (gameOver.gameIsOver == true)
                     {
-                        bandidosSquadron[i].Enemies.RenderEntities();
+                        window.Clear();
+                        gameOver.Render();
+                        enemies.ClearContainer();
+                        playerShots.ClearContainer();
+                        score.RenderScore();
+                        window.SwapBuffers();
                     }
-
-                    // render game entities here... 
-                    window.SwapBuffers();
+                    else
+                    {
+                        window.Clear();
+                        //stateMachine.ActiveState.RenderState(); //! when gamerunning.cs is on, then umute
+                        score.RenderScore();  //TODO mute
+                        player.Render();
+                        enemies.RenderEntities();
+                        playerShots.RenderEntities();
+                        enemyExplosions.RenderAnimations();
+                        // render game entities here... 
+                        window.SwapBuffers();
+                    }
                 }
 
                 if (gameTimer.ShouldReset())
@@ -293,18 +313,28 @@ namespace Galaga
         public void AddNewShot()
         {
             var shot = new DynamicShape(new Vec2F(player.getPos().X,
-                 player.getPos().Y), //+ 0.008f, player.Shape.Y + 0.01f),
+                 player.getPos().Y),
                     new Vec2F(0.008f, 0.021f));
 
             playerShots.AddDynamicEntity(shot, playerShotImage);
 
+        }
+        private void IsGameOver()//!doesn't work
+        {
+            enemies.Iterate(enemy =>
+            {
+                if (enemy.EnemyWins() == true)
+                {
+                    gameOver.gameIsOver = true;
+                }
+
+            });
         }
 
         private void IterateShots()
         {
             playerShots.Iterate(shot =>
             {
-                // TODO: move the shot's shape
                 {
                     shot.Shape.Move();
                     ((DynamicShape)shot.Shape).Direction.Y += 0.02f;
@@ -312,18 +342,12 @@ namespace Galaga
                     // guard against window borders 
                     if (shot.Shape.Position.Y > 1.0f)
                     {
-                        // TODO: delete shot
                         shot.DeleteEntity();
                     }
                     else
                     {
-                        //TODO below should be adden once ISquardonis on!
-                        //for (int i = 0; i < bandidosSquadron.Count; i++)
-                        // {
-                        //bandidosSquadron[i].
                         enemies.Iterate(enemy =>
                         {
-                            // TODO: if collision btw shot and enemy -> delete both
                             if (CollisionDetection.Aabb((DynamicShape)shot.Shape,
                              enemy.Shape).Collision)
                             {
@@ -334,19 +358,15 @@ namespace Galaga
                                 enemy.Criticalhealth();
                                 if (enemy.isDead())
                                 {
+                                    deadCount++;
+                                    score.AddPoint();
                                     enemy.DeleteEntity();
-
                                 }
                             }
-
                         });
-                        // }
-
-
                     }
                 }
             });
-
         }
 
 
@@ -361,6 +381,51 @@ namespace Galaga
         }
         public void IncreaseDifficulty()
         {
+
+        }
+        private void NextRound()
+        {
+            if (enemies.CountEntities() == 0)
+            {
+                levelCount++;
+                QuickReactionForce();
+            }
+        }
+        private void QuickReactionForce()
+        {
+            int enemyChooser = random.Next(1, 4);
+            switch (enemyChooser)
+            {
+                case 1:
+                    movingNum = 1;
+                    greenB.CreateEnemies(greenBandits, typesOfEnemy[0]);
+                    enemies = new EntityContainer<Enemy>(greenB.MaxEnemies);
+                    foreach (Enemy enemy in greenB.Enemies)
+                    {
+                        enemies.AddEntity(enemy);
+                    }
+
+                    break;
+                case 2:
+                    movingNum = 2;
+                    redB.CreateEnemies(redBandits, typesOfEnemy[1]);
+                    enemies = new EntityContainer<Enemy>(redB.MaxEnemies);
+                    foreach (Enemy enemy in redB.Enemies)
+                    {
+                        enemies.AddEntity(enemy);
+                    }
+                    break;
+                case 3:
+                    movingNum = 3;
+                    blueB.CreateEnemies(blueBandits, typesOfEnemy[2]);
+                    enemies = new EntityContainer<Enemy>(blueB.MaxEnemies);
+                    foreach (Enemy enemy in blueB.Enemies)
+                    {
+                        enemies.AddEntity(enemy);
+                    }
+                    break;
+
+            }
 
         }
 

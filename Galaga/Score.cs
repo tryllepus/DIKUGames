@@ -15,15 +15,10 @@ namespace Galaga
         }
         public void AddPoint()
         {
-            if (enemy.isDead() == false)
-            {
-                score += 50;
-            }
-            //...
+            this.score += 50;
         }
         public void RenderScore()
         {
-            //    ... 
             display.RenderText();
         }
     }

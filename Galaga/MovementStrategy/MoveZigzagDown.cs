@@ -6,7 +6,7 @@ namespace Galaga.MovementStrategy
     public class MoveZigzagDown : IMovementStrategy
     {
         private float wavePeriod = 0.045f;
-        private float MOVEMENT_SPEED = 0.0003f;
+        private float MOVEMENT_SPEED = 0.0009f;
         private float amplitude = 0.05f;
 
         public void MoveEnemies(EntityContainer<Enemy> enemies)
