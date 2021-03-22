@@ -57,7 +57,7 @@ namespace Galaga
         }
         public bool EnemyWins()
         {
-            if (this.Shape.Position.Y >= 0.9f )
+            if (this.Shape.Position.Y <= 0.1f)
             {
                 return true;
             }
