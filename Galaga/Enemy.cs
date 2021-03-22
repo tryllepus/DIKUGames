@@ -11,7 +11,7 @@ namespace Galaga
     {
         public Vec2F StartPosition { get; }
         private Player player;
-        private float MOVEMENT_SPEED = 0.01f;
+        public float MOVEMENT_SPEED { get; set; }
         private float New_MOVEMENT_SPEED = 0.0f;
         public int hitPoints { get; private set; }
         public int hitMark { get; private set; }
@@ -26,6 +26,7 @@ namespace Galaga
             this.hitPoints = 100;
             this.thresholdHP = 25;
             hitMark = 25;
+            this.MOVEMENT_SPEED = 0.01f;
 
             this.enemyStridesRed = new Image(Path.Combine("Assets", "Images", "RedMonster.png"));
 
@@ -46,8 +47,8 @@ namespace Galaga
             {
                 critCondition = true;
                 this.Image = enemyStridesRed;
-                New_MOVEMENT_SPEED = 2 * MOVEMENT_SPEED;
-                MOVEMENT_SPEED = New_MOVEMENT_SPEED;
+                this.New_MOVEMENT_SPEED = 4 * this.MOVEMENT_SPEED;
+                this.MOVEMENT_SPEED = New_MOVEMENT_SPEED;
             }
         }
         public bool isDead()
@@ -56,7 +57,7 @@ namespace Galaga
         }
         public bool EnemyWins()
         {
-            if (this.Shape.Position == new Vec2F(0.1f, 0.1f))
+            if (this.Shape.Position.Y >= 0.9f )
             {
                 return true;
             }

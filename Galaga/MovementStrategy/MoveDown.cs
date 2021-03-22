@@ -12,7 +12,7 @@ namespace Galaga.MovementStrategy
 
         public void MoveEnemy(Enemy enemy)
         {
-            enemy.Shape.Position.Y -= 0.002f;
+            enemy.Shape.Position.Y -= 0.003f;
         }
     }
 }

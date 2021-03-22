@@ -12,7 +12,7 @@ namespace Galaga.Squadrons
         public int MaxEnemies { get; }
         public GreenSquadron()
         {
-            MaxEnemies = 4;
+            MaxEnemies = 6;
             Enemies = new EntityContainer<Enemy>();
         }
 
@@ -24,7 +24,7 @@ namespace Galaga.Squadrons
             for (int i = 0; i < MaxEnemies; i++)
             {
                 Enemies.AddEntity(new Enemy(
-                    new DynamicShape(new Vec2F(0.2f + (float)i * 0.2f, 0.9f),
+                    new DynamicShape(new Vec2F(0.2f + (float)i * 0.1f, 0.9f),
                     new Vec2F(0.1f, 0.1f)),
                     new ImageStride(80, enemyStrides)));
             }

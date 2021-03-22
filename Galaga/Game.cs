@@ -17,21 +17,6 @@ namespace Galaga
 {
     public class Game : IGameEventProcessor<object>
     {
-        private Player player;
-        private GreenSquadron greenB;
-        private RedSquadron redB;
-        private BlueSquadron blueB;
-        private List<Image> greenBandits;
-        private List<Image> redBandits;
-        private List<Image> blueBandits;
-        private List<List<Image>> typesOfEnemy;
-        private Score score;
-        private GameOver gameOver;
-        private Window window;
-        private MoveZigzagDown zigzagDown;
-        private MoveDown moveDown;
-        private NoMove noMove;
-        private GameTimer gameTimer;
         private GameEventBus<object> eventBus;
         private EntityContainer<Enemy> enemies;
         private EntityContainer playerShots;
@@ -39,12 +24,28 @@ namespace Galaga
         private AnimationContainer enemyExplosions;
         private List<Image> explosionStrides;
         private const int EXPLOSION_LENGTH_MS = 500;
+        private List<List<Image>> typesOfEnemy;
         private List<Image> enemyStridesRed;
+        private MoveZigzagDown zigzagDown;
         private StateMachine stateMachine;
+        private List<Image> greenBandits;
+        private List<Image> redBandits;
+        private List<Image> blueBandits;
+        private GreenSquadron greenB;
+        private GameTimer gameTimer;
+        private BlueSquadron blueB;
+        private GameOver gameOver;
+        private RedSquadron redB;
+        private MoveDown moveDown;
+        private Player player;
+        private Score score;
+        private Window window;
+        private NoMove noMove;
         private Random random;
         private int movingNum;
-        private int levelCount;
+        private int roundCount;
         private int deadCount;
+        private float DifficultyValue;
         public Game()
         {
             stateMachine = new StateMachine();
@@ -58,20 +59,15 @@ namespace Galaga
 
             eventBus = new GameEventBus<object>();
             eventBus.InitializeEventBus(new List<GameEventType>() {
-                 GameEventType.InputEvent,
-                 GameEventType.PlayerEvent,
-                 GameEventType.WindowEvent});
-
+                 GameEventType.InputEvent,GameEventType.PlayerEvent,GameEventType.WindowEvent});
             window.RegisterEventBus(eventBus);
             eventBus.Subscribe(GameEventType.InputEvent, this);
             eventBus.Subscribe(GameEventType.PlayerEvent, player);
 
-
-
             //TODO mute from here
             var images = ImageStride.CreateStrides(4, Path.Combine("Assets", "Images", "BlueMonster.png"));
             const int numEnemies = 7;
-            enemies = new EntityContainer<Enemy>(150);
+            enemies = new EntityContainer<Enemy>(20);
 
             /*
             for (int i = 0; i < numEnemies; i++)
@@ -87,8 +83,6 @@ namespace Galaga
             moveDown = new MoveDown();
             noMove = new NoMove();
 
-
-
             playerShots = new EntityContainer();
             playerShotImage = new Image(Path.Combine("Assets", "Images", "BulletRed2.png"));
             enemyExplosions = new AnimationContainer(numEnemies);
@@ -96,11 +90,12 @@ namespace Galaga
 
             explosionStrides = ImageStride.CreateStrides(8,
                 Path.Combine("Assets", "Images", "Explosion.png"));
-
             enemyStridesRed = ImageStride.CreateStrides(2,
                     Path.Combine("Assets", "Images", "RedMonster.png"));
 
             score = new Score(new Vec2F(0.1f, 0.6f), new Vec2F(0.3f, 0.3f));
+            var scoreDisplay = new Text(score.ToString(), new Vec2F(0.1f, 0.6f), new Vec2F(0.3f, 0.3f));
+            scoreDisplay.SetColor(new Vec3I(255, 255, 255));
             gameOver = new GameOver(new Vec2F(0.5f, 0.5f), new Vec2F(0.1f, 0.1f));
 
             //TODO mute from here
@@ -108,21 +103,21 @@ namespace Galaga
             blueB = new BlueSquadron();
             greenB = new GreenSquadron();
 
-            greenBandits = ImageStride.CreateStrides(3,
+            greenBandits = ImageStride.CreateStrides(2,
                 Path.Combine("Assets", "Images", "GreenMonster.png"));
 
             redBandits = ImageStride.CreateStrides(2,
                 Path.Combine("Assets", "Images", "RedMonster.png"));
 
-            blueBandits = ImageStride.CreateStrides(3,
+            blueBandits = ImageStride.CreateStrides(2,
                 Path.Combine("Assets", "Images", "BlueMonster.png"));
 
             typesOfEnemy = new List<List<Image>>() { greenBandits, redBandits, blueBandits };
-
             //TODO mute to here
 
-            levelCount = 0;
+            roundCount = 7;
             deadCount = 0;
+            DifficultyValue = 0.03f;
             random = new Random();
 
 
@@ -146,7 +141,6 @@ namespace Galaga
                     player.Move();
                     NextRound();
                     //TODO mute to here
-
                     switch (movingNum)
                     {
                         case 1:
@@ -156,10 +150,9 @@ namespace Galaga
                             moveDown.MoveEnemies(enemies);
                             break;
                         case 3:
-                            noMove.MoveEnemies(enemies);
+                            moveDown.MoveEnemies(enemies);
                             break;
                     }
-
                 }
 
                 if (gameTimer.ShouldRender())
@@ -323,7 +316,7 @@ namespace Galaga
         {
             enemies.Iterate(enemy =>
             {
-                if (enemy.EnemyWins() == true)
+                if (enemy.EnemyWins())
                 {
                     gameOver.gameIsOver = true;
                 }
@@ -379,21 +372,10 @@ namespace Galaga
             );
 
         }
-        public void IncreaseDifficulty()
-        {
 
-        }
-        private void NextRound()
-        {
-            if (enemies.CountEntities() == 0)
-            {
-                levelCount++;
-                QuickReactionForce();
-            }
-        }
         private void QuickReactionForce()
         {
-            int enemyChooser = random.Next(1, 4);
+            var enemyChooser = random.Next(1, 4);
             switch (enemyChooser)
             {
                 case 1:
@@ -402,6 +384,7 @@ namespace Galaga
                     enemies = new EntityContainer<Enemy>(greenB.MaxEnemies);
                     foreach (Enemy enemy in greenB.Enemies)
                     {
+                        enemy.MOVEMENT_SPEED *= DifficultyValue;
                         enemies.AddEntity(enemy);
                     }
 
@@ -412,6 +395,7 @@ namespace Galaga
                     enemies = new EntityContainer<Enemy>(redB.MaxEnemies);
                     foreach (Enemy enemy in redB.Enemies)
                     {
+                        enemy.MOVEMENT_SPEED *= DifficultyValue;
                         enemies.AddEntity(enemy);
                     }
                     break;
@@ -421,14 +405,22 @@ namespace Galaga
                     enemies = new EntityContainer<Enemy>(blueB.MaxEnemies);
                     foreach (Enemy enemy in blueB.Enemies)
                     {
+                        enemy.MOVEMENT_SPEED *= DifficultyValue;
                         enemies.AddEntity(enemy);
                     }
                     break;
+            }
+        }
 
+        private void NextRound()
+        {
+
+            if ((enemies.CountEntities() == 0))
+            {
+                QuickReactionForce();
             }
 
         }
-
 
     }
 }

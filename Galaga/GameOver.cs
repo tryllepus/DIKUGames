@@ -6,6 +6,7 @@ namespace Galaga
     public class GameOver
     {
         public bool gameIsOver;
+        private Enemy enemy;
         private Text display;
         public GameOver(Vec2F position, Vec2F extent)
         {
@@ -16,5 +17,8 @@ namespace Galaga
         {
             display.RenderText();
         }
+
+
+        
     }
 }
