@@ -44,7 +44,6 @@ namespace Galaga
         private Random random;
         private int movingNum;
         private int roundCount;
-        private int deadCount;
         private float DifficultyValue;
         public Game()
         {
@@ -93,9 +92,7 @@ namespace Galaga
             enemyStridesRed = ImageStride.CreateStrides(2,
                     Path.Combine("Assets", "Images", "RedMonster.png"));
 
-            score = new Score(new Vec2F(0.1f, 0.6f), new Vec2F(0.3f, 0.3f));
-            var scoreDisplay = new Text(score.ToString(), new Vec2F(0.1f, 0.6f), new Vec2F(0.3f, 0.3f));
-            scoreDisplay.SetColor(new Vec3I(255, 255, 255));
+            score = new Score(new Vec2F(0.7f, 0.7f), new Vec2F(0.25f, 0.25f));
             gameOver = new GameOver(new Vec2F(0.5f, 0.5f), new Vec2F(0.1f, 0.1f));
 
             //TODO mute from here
@@ -116,7 +113,6 @@ namespace Galaga
             //TODO mute to here
 
             roundCount = 7;
-            deadCount = 0;
             DifficultyValue = 0.03f;
             random = new Random();
 
@@ -131,12 +127,10 @@ namespace Galaga
                 while (gameTimer.ShouldUpdate())
                 {
                     window.PollEvents();
-                    // update game logic here...
                     //GalagaBus.GetBus().ProcessEvents(); //! when GalagaBus.cs is on, then umute
                     eventBus.ProcessEvents();  //! mute when galaga.cs takes over
                                                //stateMachine.ActiveState.UpdateGameLogic();//! when gamerunning.cs is on, then umute
-
-                    //TODO mute from here
+                                               //TODO mute from here
                     IterateShots();
                     player.Move();
                     NextRound();
@@ -161,7 +155,7 @@ namespace Galaga
                     if (gameOver.gameIsOver == true)
                     {
                         window.Clear();
-                        gameOver.Render();
+                        gameOver.display.RenderText();
                         enemies.ClearContainer();
                         playerShots.ClearContainer();
                         score.RenderScore();
@@ -200,28 +194,24 @@ namespace Galaga
                             GameEventFactory<object>.CreateGameEventForAllProcessors(
                                 GameEventType.PlayerEvent, this,
                                     "KEY_LEFT", "KEY_PRESS", " "));
-                    //player.SetMoveLeft(true);
                     break;
                 case "KEY_RIGHT":
                     eventBus.RegisterEvent(
                             GameEventFactory<object>.CreateGameEventForAllProcessors(
                                 GameEventType.PlayerEvent, this,
                                     "KEY_RIGHT", "KEY_PRESS", " "));
-                    //player.SetMoveRight(true);
                     break;
                 case "KEY_UP":
                     eventBus.RegisterEvent(
                            GameEventFactory<object>.CreateGameEventForAllProcessors(
                                GameEventType.PlayerEvent, this,
                                    "KEY_UP", "KEY_PRESS", " "));
-                    //player.SetMoveUp(true);
                     break;
                 case "KEY_DOWN":
                     eventBus.RegisterEvent(
                            GameEventFactory<object>.CreateGameEventForAllProcessors(
                                GameEventType.PlayerEvent, this,
                                    "KEY_DOWN", "KEY_PRESS", " "));
-                    //player.SetMoveDown(true);
                     break;
                 case "KEY_SPACE":
                     IterateShots();
@@ -246,24 +236,20 @@ namespace Galaga
                             GameEventFactory<object>.CreateGameEventForAllProcessors(
                                 GameEventType.PlayerEvent, this,
                                     "KEY_LEFT", "KEY_RELEASE", " "));
-                    //player.SetMoveLeft(false);
                     break;
                 case "KEY_RIGHT":
                     eventBus.RegisterEvent(
                             GameEventFactory<object>.CreateGameEventForAllProcessors(
                                 GameEventType.PlayerEvent, this,
                                             "KEY_RIGHT", "KEY_RELEASE", " "));
-                    //player.SetMoveRight(false);
                     break;
                 case "KEY_UP":
-                    //player.SetMoveUp(false);
                     eventBus.RegisterEvent(
                             GameEventFactory<object>.CreateGameEventForAllProcessors(
                                 GameEventType.PlayerEvent, this,
                                     "KEY_UP", "KEY_RELEASE", " "));
                     break;
                 case "KEY_DOWN":
-                    //player.SetMoveDown(false);
                     eventBus.RegisterEvent(
                             GameEventFactory<object>.CreateGameEventForAllProcessors(
                                 GameEventType.PlayerEvent, this,
@@ -312,7 +298,7 @@ namespace Galaga
             playerShots.AddDynamicEntity(shot, playerShotImage);
 
         }
-        private void IsGameOver()//!doesn't work
+        private void IsGameOver()
         {
             enemies.Iterate(enemy =>
             {
@@ -320,7 +306,6 @@ namespace Galaga
                 {
                     gameOver.gameIsOver = true;
                 }
-
             });
         }
 
@@ -351,9 +336,8 @@ namespace Galaga
                                 enemy.Criticalhealth();
                                 if (enemy.isDead())
                                 {
-                                    deadCount++;
-                                    score.AddPoint();
                                     enemy.DeleteEntity();
+                                    score.AddPoint();
                                 }
                             }
                         });
@@ -386,8 +370,8 @@ namespace Galaga
                     {
                         enemy.MOVEMENT_SPEED *= DifficultyValue;
                         enemies.AddEntity(enemy);
-                    }
 
+                    }
                     break;
                 case 2:
                     movingNum = 2;

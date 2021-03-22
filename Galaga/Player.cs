@@ -9,7 +9,6 @@ namespace Galaga
 {
     public class Player : IGameEventProcessor<object>
     {
-        private Entity player;
         private float moveRight;
         private float moveLeft;
         private float moveUp;

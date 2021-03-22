@@ -10,7 +10,6 @@ namespace Galaga
     public class Enemy : Entity
     {
         public Vec2F StartPosition { get; }
-        private Player player;
         public float MOVEMENT_SPEED { get; set; }
         private float New_MOVEMENT_SPEED = 0.0f;
         public int hitPoints { get; private set; }
