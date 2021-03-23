@@ -20,6 +20,7 @@ namespace Galaga
         }
         public void RenderScore()
         {
+            display.SetText(string.Format("score: {0}", score.ToString()));
             display.RenderText();
         }
     }

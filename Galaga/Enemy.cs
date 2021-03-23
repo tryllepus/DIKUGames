@@ -46,7 +46,7 @@ namespace Galaga
             {
                 critCondition = true;
                 this.Image = enemyStridesRed;
-                this.New_MOVEMENT_SPEED = 4 * this.MOVEMENT_SPEED;
+                this.New_MOVEMENT_SPEED = this.MOVEMENT_SPEED * 4;
                 this.MOVEMENT_SPEED = New_MOVEMENT_SPEED;
             }
         }

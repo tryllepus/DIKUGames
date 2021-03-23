@@ -37,6 +37,7 @@ namespace Galaga
         private GameOver gameOver;
         private RedSquadron redB;
         private MoveDown moveDown;
+        private List<ISquadron> bandidosSquadron;
         private Player player;
         private Score score;
         private Window window;
@@ -116,6 +117,7 @@ namespace Galaga
             DifficultyValue = 0.03f;
             random = new Random();
 
+            bandidosSquadron = new List<ISquadron>();
 
         }
 
@@ -134,7 +136,9 @@ namespace Galaga
                     IterateShots();
                     player.Move();
                     NextRound();
+                    //FormationAction();
                     //TODO mute to here
+
                     switch (movingNum)
                     {
                         case 1:
@@ -174,7 +178,6 @@ namespace Galaga
                         window.SwapBuffers();
                     }
                 }
-
                 if (gameTimer.ShouldReset())
                 {
                     // this update happens once every second
@@ -286,7 +289,6 @@ namespace Galaga
                     break;
                 default:
                     break;
-
             }
         }
         public void AddNewShot()
@@ -359,6 +361,7 @@ namespace Galaga
 
         private void QuickReactionForce()
         {
+
             var enemyChooser = random.Next(1, 4);
             switch (enemyChooser)
             {
@@ -370,7 +373,6 @@ namespace Galaga
                     {
                         enemy.MOVEMENT_SPEED *= DifficultyValue;
                         enemies.AddEntity(enemy);
-
                     }
                     break;
                 case 2:
@@ -394,7 +396,50 @@ namespace Galaga
                     }
                     break;
             }
+
         }
+        /*
+        private void FormationAction()
+        {
+            var chooser = random.Next(1, 4);
+            //for (int i = 0; i < 4; i++)
+            //{
+            greenB.CreateEnemies(greenBandits, typesOfEnemy[0]);
+            redB.CreateEnemies(redBandits, typesOfEnemy[1]);
+            blueB.CreateEnemies(blueBandits, typesOfEnemy[2]);
+            // }
+            bandidosSquadron.Add(greenB);
+            bandidosSquadron.Add(redB);
+            bandidosSquadron.Add(blueB);
+
+            switch (chooser)
+            {
+                case 1:
+                    foreach (Enemy enemy in greenB.Enemies)
+                    {
+                        enemies.AddEntity(enemy);
+                    }
+                    zigzagDown.MoveEnemies(enemies);
+                    break;
+                case 2:
+                    foreach (Enemy enemy in redB.Enemies)
+                    {
+                        enemies.AddEntity(enemy);
+                    }
+                    moveDown.MoveEnemies(enemies);
+                    break;
+                case 3:
+                    foreach (Enemy enemy in blueB.Enemies)
+                    {
+                        enemies.AddEntity(enemy);
+                    }
+                    moveDown.MoveEnemies(enemies);
+                    break;
+            }
+
+
+        }
+        */
 
         private void NextRound()
         {
@@ -405,6 +450,7 @@ namespace Galaga
             }
 
         }
+
 
     }
 }
