@@ -46,6 +46,7 @@ namespace Galaga
         private int movingNum;
         private int roundCount;
         private float DifficultyValue;
+        private Enemy django;
         public Game()
         {
             stateMachine = new StateMachine();
@@ -69,16 +70,6 @@ namespace Galaga
             const int numEnemies = 7;
             enemies = new EntityContainer<Enemy>(20);
 
-            /*
-            for (int i = 0; i < numEnemies; i++)
-            {
-                enemies.AddEntity(new Enemy(
-                    new DynamicShape(new Vec2F(0.1f + (float)i * 0.1f, 0.9f),
-                    new Vec2F(0.1f, 0.1f)),
-                    new ImageStride(80, images)));
-            }
-            */
-
             zigzagDown = new MoveZigzagDown();
             moveDown = new MoveDown();
             noMove = new NoMove();
@@ -93,8 +84,8 @@ namespace Galaga
             enemyStridesRed = ImageStride.CreateStrides(2,
                     Path.Combine("Assets", "Images", "RedMonster.png"));
 
-            score = new Score(new Vec2F(0.7f, 0.7f), new Vec2F(0.25f, 0.25f));
-            gameOver = new GameOver(new Vec2F(0.5f, 0.5f), new Vec2F(0.1f, 0.1f));
+            score = new Score(new Vec2F(0.7f, 0.7f), new Vec2F(0.3f, 0.3f));
+            gameOver = new GameOver(new Vec2F(0.2f, 0.3f), new Vec2F(0.4f, 0.4f));
 
             //TODO mute from here
             redB = new RedSquadron();
@@ -107,7 +98,7 @@ namespace Galaga
             redBandits = ImageStride.CreateStrides(2,
                 Path.Combine("Assets", "Images", "RedMonster.png"));
 
-            blueBandits = ImageStride.CreateStrides(2,
+            blueBandits = ImageStride.CreateStrides(4,
                 Path.Combine("Assets", "Images", "BlueMonster.png"));
 
             typesOfEnemy = new List<List<Image>>() { greenBandits, redBandits, blueBandits };
@@ -136,21 +127,9 @@ namespace Galaga
                     IterateShots();
                     player.Move();
                     NextRound();
-                    //FormationAction();
+                    FormationAction();
                     //TODO mute to here
 
-                    switch (movingNum)
-                    {
-                        case 1:
-                            zigzagDown.MoveEnemies(enemies);
-                            break;
-                        case 2:
-                            moveDown.MoveEnemies(enemies);
-                            break;
-                        case 3:
-                            moveDown.MoveEnemies(enemies);
-                            break;
-                    }
                 }
 
                 if (gameTimer.ShouldRender())
@@ -361,94 +340,85 @@ namespace Galaga
 
         private void QuickReactionForce()
         {
+            greenB.CreateEnemies(greenBandits, typesOfEnemy[0]);
+            redB.CreateEnemies(redBandits, typesOfEnemy[1]);
+            blueB.CreateEnemies(blueBandits, typesOfEnemy[2]);
+
+            bandidosSquadron.Add(greenB);
+            bandidosSquadron.Add(redB);
+            bandidosSquadron.Add(blueB);
 
             var enemyChooser = random.Next(1, 4);
+            if (bandidosSquadron.Count == roundCount)
+            {
+                foreach (var squadron in bandidosSquadron)
+                {
+                    foreach (Enemy enemy in squadron.Enemies)
+                    {
+                        enemy.MOVEMENT_SPEED *= 10.0f;
+                        roundCount = 0;
+                    }
+                }
+            }
             switch (enemyChooser)
             {
                 case 1:
                     movingNum = 1;
-                    greenB.CreateEnemies(greenBandits, typesOfEnemy[0]);
                     enemies = new EntityContainer<Enemy>(greenB.MaxEnemies);
                     foreach (Enemy enemy in greenB.Enemies)
                     {
                         enemy.MOVEMENT_SPEED *= DifficultyValue;
                         enemies.AddEntity(enemy);
                     }
+                    roundCount++;
                     break;
                 case 2:
                     movingNum = 2;
-                    redB.CreateEnemies(redBandits, typesOfEnemy[1]);
                     enemies = new EntityContainer<Enemy>(redB.MaxEnemies);
                     foreach (Enemy enemy in redB.Enemies)
                     {
                         enemy.MOVEMENT_SPEED *= DifficultyValue;
                         enemies.AddEntity(enemy);
                     }
+                    roundCount++;
                     break;
                 case 3:
                     movingNum = 3;
-                    blueB.CreateEnemies(blueBandits, typesOfEnemy[2]);
                     enemies = new EntityContainer<Enemy>(blueB.MaxEnemies);
                     foreach (Enemy enemy in blueB.Enemies)
                     {
                         enemy.MOVEMENT_SPEED *= DifficultyValue;
                         enemies.AddEntity(enemy);
                     }
+                    roundCount++;
                     break;
             }
 
         }
-        /*
+
         private void FormationAction()
         {
-            var chooser = random.Next(1, 4);
-            //for (int i = 0; i < 4; i++)
-            //{
-            greenB.CreateEnemies(greenBandits, typesOfEnemy[0]);
-            redB.CreateEnemies(redBandits, typesOfEnemy[1]);
-            blueB.CreateEnemies(blueBandits, typesOfEnemy[2]);
-            // }
-            bandidosSquadron.Add(greenB);
-            bandidosSquadron.Add(redB);
-            bandidosSquadron.Add(blueB);
-
-            switch (chooser)
+            switch (movingNum)
             {
                 case 1:
-                    foreach (Enemy enemy in greenB.Enemies)
-                    {
-                        enemies.AddEntity(enemy);
-                    }
                     zigzagDown.MoveEnemies(enemies);
                     break;
                 case 2:
-                    foreach (Enemy enemy in redB.Enemies)
-                    {
-                        enemies.AddEntity(enemy);
-                    }
                     moveDown.MoveEnemies(enemies);
                     break;
                 case 3:
-                    foreach (Enemy enemy in blueB.Enemies)
-                    {
-                        enemies.AddEntity(enemy);
-                    }
                     moveDown.MoveEnemies(enemies);
                     break;
             }
-
-
         }
-        */
+
 
         private void NextRound()
         {
-
             if ((enemies.CountEntities() == 0))
             {
                 QuickReactionForce();
             }
-
         }
 
 

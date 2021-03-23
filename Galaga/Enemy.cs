@@ -23,8 +23,8 @@ namespace Galaga
         {
             this.StartPosition = shape.Position.Copy();
             this.hitPoints = 100;
-            this.thresholdHP = 25;
-            hitMark = 25;
+            this.thresholdHP = 30;
+            hitMark = 35;
             this.MOVEMENT_SPEED = 0.01f;
 
             this.enemyStridesRed = new Image(Path.Combine("Assets", "Images", "RedMonster.png"));
@@ -46,7 +46,7 @@ namespace Galaga
             {
                 critCondition = true;
                 this.Image = enemyStridesRed;
-                this.New_MOVEMENT_SPEED = this.MOVEMENT_SPEED * 2;
+                this.New_MOVEMENT_SPEED = this.MOVEMENT_SPEED * 4;
                 this.MOVEMENT_SPEED = New_MOVEMENT_SPEED;
             }
         }

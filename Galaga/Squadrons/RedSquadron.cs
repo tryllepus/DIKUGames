@@ -18,13 +18,22 @@ namespace Galaga.Squadrons
 
         public void CreateEnemies(List<Image> enemyStrides, List<Image> alternativeEnemyStrides)
         {
-            for (int i = 0; i < MaxEnemies; i++)
+            for (int i = 0; i < MaxEnemies - 3; i++)
             {
                 Enemies.AddEntity(new Enemy(
-                    new DynamicShape(new Vec2F(0.1f + (float)i * 0.1f, 0.9f),
+                    new DynamicShape(new Vec2F(0.35f + (float)i * 0.1f, 0.9f),
                     new Vec2F(0.1f, 0.1f)),
                     new ImageStride(80, enemyStrides)));
             }
+            Enemies.AddEntity(new Enemy(
+                new DynamicShape(new Vec2F(0.1f, 0.8f),
+                new Vec2F(0.1f, 0.1f)),
+                new ImageStride(80, enemyStrides)));
+
+            Enemies.AddEntity(new Enemy(
+                new DynamicShape(new Vec2F(0.75f, 0.8f),
+                new Vec2F(0.1f, 0.1f)),
+                new ImageStride(80, enemyStrides)));
         }
 
     }
