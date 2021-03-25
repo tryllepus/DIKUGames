@@ -8,7 +8,6 @@ using DIKUArcade.Math;
 using System.Collections.Generic;
 using DIKUArcade.EventBus;
 using DIKUArcade.Physics;
-using Galaga;
 using Galaga.MovementStrategy;
 using Galaga.Squadrons;
 using GalagaStates;
