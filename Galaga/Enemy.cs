@@ -25,7 +25,7 @@ namespace Galaga
             this.hitPoints = 100;
             this.thresholdHP = 30;
             hitMark = 35;
-            this.MOVEMENT_SPEED = 0.01f;
+            this.MOVEMENT_SPEED = 0.02f;
 
             this.enemyStridesRed = new Image(Path.Combine("Assets", "Images", "RedMonster.png"));
 
@@ -46,8 +46,9 @@ namespace Galaga
             {
                 critCondition = true;
                 this.Image = enemyStridesRed;
-                this.New_MOVEMENT_SPEED = this.MOVEMENT_SPEED * 4.0f;
-                this.MOVEMENT_SPEED = New_MOVEMENT_SPEED;
+                this.Shape.Position.Y -= 0.006f;
+                //this.New_MOVEMENT_SPEED = this.MOVEMENT_SPEED * 4.0f;
+                //this.MOVEMENT_SPEED = New_MOVEMENT_SPEED;
             }
         }
         public bool isDead()

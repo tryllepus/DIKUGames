@@ -5,6 +5,7 @@ namespace Galaga.MovementStrategy
 {
     public class MoveDown : IMovementStrategy
     {
+        public float MOVEMENT_SPEED = 0.002f; //! Har oprettet denne public speed
         public void MoveEnemies(EntityContainer<Enemy> enemies)
         {
             enemies.Iterate(MoveEnemy);
@@ -12,7 +13,12 @@ namespace Galaga.MovementStrategy
 
         public void MoveEnemy(Enemy enemy)
         {
-            enemy.Shape.Position.Y -= 0.002f;
+            if (enemy.hitPoints > enemy.thresholdHP){
+                enemy.Shape.Position.Y -= MOVEMENT_SPEED;
+            }
+            else{
+                enemy.Criticalhealth();
+            }
         }
     }
 }

@@ -324,7 +324,13 @@ namespace Galaga
                                     if (deadEnemies >= 3)
                                     {
                                         //! why this doesnt work?
-                                        enemy.MOVEMENT_SPEED += 3.0f;
+                                        moveDown.MOVEMENT_SPEED += 0.001f;
+                                        zigzagDown.MOVEMENT_SPEED += 0.001f;
+                                        deadEnemies = 0;
+                                        //enemy.Criticalhealth();
+                                        //enemy.Shape.Position.Y -= 0.006f; 
+                                        //moveDown.MoveEnemies(enemies);
+                                        //enemy.MOVEMENT_SPEED += 3.0f;
                                     }
                                 }
                             }
