@@ -47,6 +47,7 @@ namespace Galaga
         private int roundCount;
         private float DifficultyValue;
         private Enemy django;
+        private int deadEnemies;
         public Game()
         {
             stateMachine = new StateMachine();
@@ -105,6 +106,7 @@ namespace Galaga
             //TODO mute to here
 
             roundCount = 7;
+            deadEnemies = 0;
             DifficultyValue = 0.03f;
             random = new Random();
 
@@ -319,6 +321,12 @@ namespace Galaga
                                 {
                                     enemy.DeleteEntity();
                                     score.AddPoint();
+                                    deadEnemies++;
+                                    if (deadEnemies >= 3)
+                                    {
+                                        //! why this doesnt work?
+                                        enemy.MOVEMENT_SPEED += 3.0f;
+                                    }
                                 }
                             }
                         });
@@ -340,6 +348,7 @@ namespace Galaga
 
         private void QuickReactionForce()
         {
+
             greenB.CreateEnemies(greenBandits, typesOfEnemy[0]);
             redB.CreateEnemies(redBandits, typesOfEnemy[1]);
             blueB.CreateEnemies(blueBandits, typesOfEnemy[2]);
@@ -349,49 +358,41 @@ namespace Galaga
             bandidosSquadron.Add(blueB);
 
             var enemyChooser = random.Next(1, 4);
-            if (bandidosSquadron.Count == roundCount)
+            if ((bandidosSquadron.Count >= 0))
             {
-                foreach (var squadron in bandidosSquadron)
+                switch (enemyChooser)
                 {
-                    foreach (Enemy enemy in squadron.Enemies)
-                    {
-                        enemy.MOVEMENT_SPEED *= 10.0f;
-                        roundCount = 0;
-                    }
+                    case 1:
+                        movingNum = 1;
+                        enemies = new EntityContainer<Enemy>(greenB.MaxEnemies);
+                        foreach (Enemy enemy in greenB.Enemies)
+                        {
+                            //enemy.MOVEMENT_SPEED *= DifficultyValue;
+                            enemies.AddEntity(enemy);
+                        }
+                        roundCount++;
+                        break;
+                    case 2:
+                        movingNum = 2;
+                        enemies = new EntityContainer<Enemy>(redB.MaxEnemies);
+                        foreach (Enemy enemy in redB.Enemies)
+                        {
+                            //enemy.MOVEMENT_SPEED *= DifficultyValue;
+                            enemies.AddEntity(enemy);
+                        }
+                        roundCount++;
+                        break;
+                    case 3:
+                        movingNum = 3;
+                        enemies = new EntityContainer<Enemy>(blueB.MaxEnemies);
+                        foreach (Enemy enemy in blueB.Enemies)
+                        {
+                            //enemy.MOVEMENT_SPEED *= DifficultyValue;
+                            enemies.AddEntity(enemy);
+                        }
+                        roundCount++;
+                        break;
                 }
-            }
-            switch (enemyChooser)
-            {
-                case 1:
-                    movingNum = 1;
-                    enemies = new EntityContainer<Enemy>(greenB.MaxEnemies);
-                    foreach (Enemy enemy in greenB.Enemies)
-                    {
-                        enemy.MOVEMENT_SPEED *= DifficultyValue;
-                        enemies.AddEntity(enemy);
-                    }
-                    roundCount++;
-                    break;
-                case 2:
-                    movingNum = 2;
-                    enemies = new EntityContainer<Enemy>(redB.MaxEnemies);
-                    foreach (Enemy enemy in redB.Enemies)
-                    {
-                        enemy.MOVEMENT_SPEED *= DifficultyValue;
-                        enemies.AddEntity(enemy);
-                    }
-                    roundCount++;
-                    break;
-                case 3:
-                    movingNum = 3;
-                    enemies = new EntityContainer<Enemy>(blueB.MaxEnemies);
-                    foreach (Enemy enemy in blueB.Enemies)
-                    {
-                        enemy.MOVEMENT_SPEED *= DifficultyValue;
-                        enemies.AddEntity(enemy);
-                    }
-                    roundCount++;
-                    break;
             }
 
         }
@@ -420,6 +421,7 @@ namespace Galaga
                 QuickReactionForce();
             }
         }
+
 
 
     }
