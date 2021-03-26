@@ -4,9 +4,8 @@ using DIKUArcade.EventBus;
 using DIKUArcade.Graphics;
 using DIKUArcade.Math;
 using DIKUArcade.State;
-using Galaga;
 
-namespace GalagaStates
+namespace Galaga.GalagaStates
 {
     public class MainMenu : IGameState
     {
@@ -16,10 +15,6 @@ namespace GalagaStates
         private Text[] menuButtons;
         private int activeMenuButton;
         private int maxMenuButtons;
-        public static MainMenu GetInstance()
-        {
-            return MainMenu.instance ?? (MainMenu.instance = new MainMenu());
-        }
         public MainMenu()
         {
             backGroundImage = new Entity
@@ -31,20 +26,26 @@ namespace GalagaStates
                 new Text("New Game", new Vec2F(0.3f, 0.5f), new Vec2F(0.2f, 0.3f)),
                 new Text("Quit", new Vec2F(0.3f, 0.25f), new Vec2F(0.2f, 0.3f)),
             };
-            InitializeGameState();
+            activeMenuButton = 0;
+            maxMenuButtons = menuButtons.Length;
             
+        }
+
+        public static MainMenu GetInstance()
+        {
+            return MainMenu.instance ?? (MainMenu.instance = new MainMenu());
         }
         
         public void GameLoop()
         {
+            throw new System.NotImplementedException();
         }
         
 
 
         public void InitializeGameState()
         {
-            activeMenuButton = 0;
-            maxMenuButtons = 1;
+            throw new System.NotImplementedException();
         }
 
         public void RenderState()
@@ -75,45 +76,34 @@ namespace GalagaStates
                 switch (keyValue)
                 {
                     case "KEY_UP":
-                        if (activeMenuButton > maxMenuButtons)
-                        {
-                            activeMenuButton -= 1;
-                        }
-                        else
-                        {
-                            activeMenuButton %= maxMenuButtons;
-                        }
+                        activeMenuButton = activeMenuButton == 0 ?
+                            maxMenuButtons - 1:
+                            activeMenuButton - 1;
                         break;
                     case "KEY_DOWN":
-                        if (activeMenuButton < maxMenuButtons)
-                        {
-                            activeMenuButton += 1;
-                        }
-                        else
-                        {
-                            activeMenuButton %= maxMenuButtons;
-                        }
+                        activeMenuButton = activeMenuButton == maxMenuButtons - 1?
+                            0:
+                            activeMenuButton + 1;
                         break;
                     case "KEY_ENTER":
-                        if (activeMenuButton == 0)
+                        switch(activeMenuButton)
                         {
-                            GalagaBus.GetBus().RegisterEvent(
+                            case 0:
+                                GalagaBus.GetBus().RegisterEvent(
                                 GameEventFactory<object>.CreateGameEventForAllProcessors(
                                     GameEventType.GameStateEvent, this,
                                     "CHANGE_STATE", "GAME_RUNNING", ""));
-                        }
-                        else if (activeMenuButton == 1)
-                        {
-                            GalagaBus.GetBus().RegisterEvent(
+                                break;
+                            case 1:
+                                GalagaBus.GetBus().RegisterEvent(
                                 GameEventFactory<object>.CreateGameEventForAllProcessors(
                                     GameEventType.WindowEvent, this,
                                     "CLOSE_WINDOW", "KEY_PRESS", ""));
+                                break;
                         }
                         break;
-
                 }
             }
         }
-
     }
 }

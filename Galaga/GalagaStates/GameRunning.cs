@@ -7,12 +7,11 @@ using DIKUArcade.Graphics;
 using DIKUArcade.Math;
 using DIKUArcade.Physics;
 using DIKUArcade.State;
-using Galaga;
 using Galaga.MovementStrategy;
 using Galaga.Squadrons;
 using DIKUArcade;
 
-namespace GalagaStates
+namespace Galaga.GalagaStates
 {
     public class GameRunning : IGameState
     {
@@ -29,7 +28,6 @@ namespace GalagaStates
         private EntityContainer playerShots;
         private MoveZigzagDown zigzagDown;
         private List<List<Image>> typesOfEnemy;
-        //private List<List<Image>> alternativeEnemyStrides;
         private List<Image> blueBandits;
         private List<Image> redBandits;
         private List<Image> greenBandits;
@@ -46,6 +44,11 @@ namespace GalagaStates
         private GameOver gameOver;
         private Random random;
 
+        public GameRunning()
+        {
+            this.InitializeGameState();
+        }
+
         public static GameRunning GetInstance()
         {
             return GameRunning.instance ??
@@ -53,11 +56,84 @@ namespace GalagaStates
         }
 
 
-        public GameRunning()
+        public void AddExplosion(Vec2F position, Vec2F extent)
         {
-            backgroundImage = new Image(Path.Combine("Assets", "Images", "SpaceBackground.png"));
-            window = new Window("Galaga", 500, 500);
+            enemyExplosions.AddAnimation(
+                new StationaryShape(position, extent), EXPLOSION_LENGTH_MS,
+                new ImageStride(EXPLOSION_LENGTH_MS / 8, explosionStrides)
+            );
+        }
 
+        public void AddNewShot()
+        {
+            var shot = new DynamicShape(new Vec2F(player.getPos().X,
+                 player.getPos().Y),
+                    new Vec2F(0.008f, 0.021f));
+
+            playerShots.AddDynamicEntity(shot, playerShotImage);
+        }
+
+
+        private void IterateShots()
+        {
+            playerShots.Iterate(shot =>
+            {
+
+                {
+                    shot.Shape.Move();
+                    ((DynamicShape)shot.Shape).Direction.Y += 0.02f;//! maybe just '='
+
+                    if (shot.Shape.Position.Y > 1.0f)
+                    {
+                        shot.DeleteEntity();
+                    }
+                    else
+                    {
+                        for (int i = 0; i < bandidosSquadron.Count; i++)
+                        {
+                            bandidosSquadron[i].Enemies.Iterate(enemy =>
+                            {
+                                if (CollisionDetection.Aabb((DynamicShape)shot.Shape,
+                                     enemy.Shape).Collision)
+                                {
+                                    AddExplosion(new Vec2F(enemy.Shape.Position.X, enemy.Shape.Position.Y),
+                                        new Vec2F(enemy.Shape.Extent.X, enemy.Shape.Extent.Y));
+                                    shot.DeleteEntity();
+                                    enemy.HitMarker();
+                                    enemy.Criticalhealth();
+                                    if (enemy.isDead())
+                                    {
+                                        enemy.DeleteEntity();
+                                        score.AddPoint();
+                                        deadEnemies++;
+                                        if (deadEnemies >= 10)
+                                        {
+                                            moveDown.MOVEMENT_SPEED += 0.001f;
+                                            zigzagDown.MOVEMENT_SPEED += 0.001f;
+                                            deadEnemies = 0;
+                                        }
+
+                                    }
+                                }
+
+                            });
+                        }
+
+
+                    }
+                }
+            });
+
+        }
+
+
+
+        public void GameLoop()
+        {
+        }
+
+        public void InitializeGameState()
+        {
             player = new Player(new DynamicShape(
                        new Vec2F(0.45f, 0.1f), new Vec2F(0.1f, 0.1f)),
                        new Image(Path.Combine("Assets", "Images", "Player.png")));
@@ -82,13 +158,12 @@ namespace GalagaStates
             noMove = new NoMove();
             moveDown = new MoveDown();
 
-            //alternativeEnemyStrides = new List<List<Image>>() { };
-
             explosionStrides = ImageStride.CreateStrides(8,
                            Path.Combine("Assets", "Images", "Explosion.png"));
             score = new Score(new Vec2F(0.7f, 0.7f), new Vec2F(0.3f, 0.3f));
             gameOver = new GameOver(new Vec2F(0.2f, 0.3f), new Vec2F(0.4f, 0.4f));
 
+            enemies = new EntityContainer<Enemy>();
 
             enemyExplosions = new AnimationContainer(60);
             playerShots = new EntityContainer();
@@ -97,103 +172,10 @@ namespace GalagaStates
             roundCount = 7;
             deadEnemies = 0;
             random = new Random();
-
-        }
-
-
-        public void AddExplosion(Vec2F position, Vec2F extent)
-        {
-            // TODO: add explosion to the AnimationContainer
-            enemyExplosions.AddAnimation(
-                new StationaryShape(position, extent), EXPLOSION_LENGTH_MS,
-                new ImageStride(EXPLOSION_LENGTH_MS / 8, explosionStrides)
-            );
-        }
-
-        public void AddNewShot()
-        {
-            var shot = new DynamicShape(new Vec2F(player.getPos().X,
-                 player.getPos().Y), //+ 0.008f, player.Shape.Y + 0.01f),
-                    new Vec2F(0.008f, 0.021f));
-
-            playerShots.AddDynamicEntity(shot, playerShotImage);
-        }
-
-
-        private void IterateShots()
-        {
-            playerShots.Iterate(shot =>
-            {
-                // TODO: move the shot's shape
-                {
-                    shot.Shape.Move();
-                    ((DynamicShape)shot.Shape).Direction.Y += 0.02f;//! maybe just '='
-
-                    //TODO: guard against window borders 
-                    if (shot.Shape.Position.Y > 1.0f)
-                    {
-                        // TODO: delete shot
-                        shot.DeleteEntity();
-                    }
-                    else
-                    {
-                        for (int i = 0; i < bandidosSquadron.Count; i++)
-                        {
-                            bandidosSquadron[i].Enemies.Iterate(enemy =>
-                            {
-                                // TODO: if collision btw shot and enemy -> delete both
-                                if (CollisionDetection.Aabb((DynamicShape)shot.Shape,
-                                     enemy.Shape).Collision)
-                                {
-                                    AddExplosion(new Vec2F(enemy.Shape.Position.X, enemy.Shape.Position.Y),
-                                        new Vec2F(enemy.Shape.Extent.X, enemy.Shape.Extent.Y));
-                                    shot.DeleteEntity();
-                                    enemy.HitMarker();
-                                    enemy.Criticalhealth();
-                                    if (enemy.isDead())
-                                    {
-                                        enemy.DeleteEntity();
-                                        score.AddPoint();
-                                        deadEnemies++;
-                                        if (deadEnemies >= 10)
-                                        {
-                                            //! why this doesnt work?
-                                            moveDown.MOVEMENT_SPEED += 0.001f;
-                                            zigzagDown.MOVEMENT_SPEED += 0.001f;
-                                            deadEnemies = 0;
-                                            //enemy.Criticalhealth();
-                                            //enemy.Shape.Position.Y -= 0.006f; 
-                                            //moveDown.MoveEnemies(enemies);
-                                            //enemy.MOVEMENT_SPEED += 3.0f;
-                                        }
-
-                                    }
-                                }
-
-                            });
-                        }
-
-
-                    }
-                }
-            });
-
-        }
-
-
-
-        public void GameLoop()
-        {
-        }
-
-        public void InitializeGameState()
-        {
-
         }
 
         public void UpdateGameLogic()
         {
-            DIKUArcade.Window.CreateOpenGLContext();
             IterateShots();
             player.Move();
             FormationAction();
@@ -202,18 +184,8 @@ namespace GalagaStates
         public void RenderState()
         {
             IsGameOver();
-            if (gameOver.gameIsOver == true)
+            if (gameOver.gameIsOver == false)
             {
-                window.Clear();
-                gameOver.display.RenderText();
-                enemies.ClearContainer();
-                playerShots.ClearContainer();
-                score.RenderScore();
-                window.SwapBuffers();
-            }
-            else
-            {
-                backgroundImage.Render(new StationaryShape(0.0f, 0.0f, 1.0f, 1.0f));
                 player.Render();
                 score.RenderScore();
                 enemies.RenderEntities();
@@ -241,7 +213,6 @@ namespace GalagaStates
                         enemies = new EntityContainer<Enemy>(greenB.MaxEnemies);
                         foreach (Enemy enemy in greenB.Enemies)
                         {
-                            //enemy.MOVEMENT_SPEED *= DifficultyValue;
                             enemies.AddEntity(enemy);
                         }
                         roundCount++;
@@ -251,7 +222,6 @@ namespace GalagaStates
                         enemies = new EntityContainer<Enemy>(redB.MaxEnemies);
                         foreach (Enemy enemy in redB.Enemies)
                         {
-                            //enemy.MOVEMENT_SPEED *= DifficultyValue;
                             enemies.AddEntity(enemy);
                         }
                         roundCount++;
@@ -261,7 +231,6 @@ namespace GalagaStates
                         enemies = new EntityContainer<Enemy>(blueB.MaxEnemies);
                         foreach (Enemy enemy in blueB.Enemies)
                         {
-                            //enemy.MOVEMENT_SPEED *= DifficultyValue;
                             enemies.AddEntity(enemy);
                         }
                         roundCount++;
@@ -304,98 +273,97 @@ namespace GalagaStates
             });
         }
 
-
-
-        public void HandleKeyEvent(string keyValue, string keyAction)
+        public void KeyPress(string key)
         {
-            switch (keyAction)
+            switch (key)
             {
-                case "KEY_PRESS":
-                    switch (keyValue)
-                    {
-                        case "KEY_ESCAPE":
-                            GalagaBus.GetBus().RegisterEvent(
-                                GameEventFactory<object>.CreateGameEventForAllProcessors(
-                                    GameEventType.GameStateEvent, this,
-                                    "CHANGE_STATE", "GAME_PAUSED", ""));
-                            //window.CloseWindow();
-                            break;
-
-                        case "KEY_LEFT":
-                            GalagaBus.GetBus().RegisterEvent(
-                                GameEventFactory<object>.CreateGameEventForAllProcessors(
-                                    GameEventType.PlayerEvent, this,
-                                    "PLAYER_LEFT", "KEY_PRESS", ""));
-                            break;
-
-                        case "KEY_RIGHT":
-                            GalagaBus.GetBus().RegisterEvent(
-                                GameEventFactory<object>.CreateGameEventForAllProcessors(
-                                    GameEventType.PlayerEvent, this,
-                                    "PLAYER_RIGHT", "KEY_PRESS", ""));
-                            break;
-
-                        case "KEY_DOWN":
-                            //player.SetMoveDown(false);
-                            GalagaBus.GetBus().RegisterEvent(
-                                    GameEventFactory<object>.CreateGameEventForAllProcessors(
-                                        GameEventType.PlayerEvent, this,
-                                            "KEY_DOWN", "KEY_PRESS", " "));
-                            break;
-
-                        case "KEY_UP":
-                            //player.SetMoveUp(false);
-                            GalagaBus.GetBus().RegisterEvent(
-                                    GameEventFactory<object>.CreateGameEventForAllProcessors(
-                                        GameEventType.PlayerEvent, this,
-                                            "KEY_UP", "KEY_PRESS", " "));
-                            break;
-
-                        case "KEY_SPACE":
-                            AddNewShot();
-                            break;
-                    }
+                case "KEY_ESCAPE":
+                    GalagaBus.GetBus().RegisterEvent(
+                        GameEventFactory<object>.CreateGameEventForAllProcessors(
+                            GameEventType.GameStateEvent, this,
+                            "CHANGE_STATE", "GAME_PAUSED", ""));
+                    break;
+                case "KEY_LEFT":
+                    GalagaBus.GetBus().RegisterEvent(
+                        GameEventFactory<object>.CreateGameEventForAllProcessors(
+                            GameEventType.PlayerEvent, this,
+                            "KEY_LEFT", "KEY_PRESS", ""));
                     break;
 
-
-                case "KEY_RELEASE":
-                    switch (keyValue)
-                    {
-                        case "KEY_LEFT":
-                            GalagaBus.GetBus().RegisterEvent(
-                                    GameEventFactory<object>.CreateGameEventForAllProcessors(
-                                        GameEventType.PlayerEvent, this,
-                                            "KEY_LEFT", "KEY_RELEASE", " "));
-                            break;
-
-                        case "KEY_RIGHT":
-                            GalagaBus.GetBus().RegisterEvent(
-                                    GameEventFactory<object>.CreateGameEventForAllProcessors(
-                                        GameEventType.PlayerEvent, this,
-                                                    "KEY_RIGHT", "KEY_RELEASE", " "));
-                            break;
-
-                        case "KEY_UP":
-                            GalagaBus.GetBus().RegisterEvent(
-                                    GameEventFactory<object>.CreateGameEventForAllProcessors(
-                                        GameEventType.PlayerEvent, this,
-                                            "KEY_UP", "KEY_RELEASE", " "));
-                            break;
-
-                        case "KEY_DOWN":
-                            GalagaBus.GetBus().RegisterEvent(
-                                    GameEventFactory<object>.CreateGameEventForAllProcessors(
-                                        GameEventType.PlayerEvent, this,
-                                            "KEY_DOWN", "KEY_RELEASE", " "));
-                            break;
-
-                    }
+                case "KEY_RIGHT":
+                    GalagaBus.GetBus().RegisterEvent(
+                        GameEventFactory<object>.CreateGameEventForAllProcessors(
+                            GameEventType.PlayerEvent, this,
+                            "KEY_RIGHT", "KEY_PRESS", ""));
                     break;
 
+                case "KEY_DOWN":
+                    GalagaBus.GetBus().RegisterEvent(
+                            GameEventFactory<object>.CreateGameEventForAllProcessors(
+                                GameEventType.PlayerEvent, this,
+                                    "KEY_DOWN", "KEY_PRESS", " "));
+                    break;
 
+                case "KEY_UP":
+                    GalagaBus.GetBus().RegisterEvent(
+                            GameEventFactory<object>.CreateGameEventForAllProcessors(
+                                GameEventType.PlayerEvent, this,
+                                    "KEY_UP", "KEY_PRESS", " "));
+                    break;
+
+                case "KEY_SPACE":
+                    AddNewShot();
+                    break;
+            }
+        }
+
+        public void KeyRelease(string key)
+        {
+            switch (key)
+            {
+                case "KEY_LEFT":
+                    GalagaBus.GetBus().RegisterEvent(
+                            GameEventFactory<object>.CreateGameEventForAllProcessors(
+                                GameEventType.PlayerEvent, this,
+                                    "KEY_LEFT", "KEY_RELEASE", " "));
+                    break;
+
+                case "KEY_RIGHT":
+                    GalagaBus.GetBus().RegisterEvent(
+                            GameEventFactory<object>.CreateGameEventForAllProcessors(
+                                GameEventType.PlayerEvent, this,
+                                            "KEY_RIGHT", "KEY_RELEASE", " "));
+                    break;
+
+                case "KEY_UP":
+                    GalagaBus.GetBus().RegisterEvent(
+                            GameEventFactory<object>.CreateGameEventForAllProcessors(
+                                GameEventType.PlayerEvent, this,
+                                    "KEY_UP", "KEY_RELEASE", " "));
+                    break;
+
+                case "KEY_DOWN":
+                    GalagaBus.GetBus().RegisterEvent(
+                            GameEventFactory<object>.CreateGameEventForAllProcessors(
+                                GameEventType.PlayerEvent, this,
+                                    "KEY_DOWN", "KEY_RELEASE", " "));
+                    break;
 
             }
         }
 
+        public void HandleKeyEvent(string keyAction, string keyValue)
+        {
+            switch (keyValue)
+            {
+                case "KEY_PRESS":
+                    KeyPress(keyAction);
+                    break;
+                
+                case "KEY_RELEASE":
+                    KeyRelease(keyAction);
+                    break;
+            }
+        }
     }
 }
