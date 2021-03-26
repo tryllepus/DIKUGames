@@ -5,9 +5,8 @@ using Galaga;
 
 namespace GalagaStates
 {
-    public class StateMachine //: IGameEventProcessor<object>
+    public class StateMachine : IGameEventProcessor<object>
     {
-        /*
         public IGameState ActiveState { get; private set; }
         public StateMachine()
         {
@@ -55,6 +54,6 @@ namespace GalagaStates
                 ActiveState.HandleKeyEvent(gameEvent.Message, gameEvent.Parameter1);
             }
         }
-        */
+
     }
 }

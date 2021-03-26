@@ -17,55 +17,72 @@ namespace Galaga
     public class Game : IGameEventProcessor<object>
     {
         private GameEventBus<object> eventBus;
-        private EntityContainer<Enemy> enemies;
-        private EntityContainer playerShots;
-        private IBaseImage playerShotImage;
-        private AnimationContainer enemyExplosions;
+        //private EntityContainer<Enemy> enemies;
+        //private EntityContainer playerShots;
+        //private IBaseImage playerShotImage;
+        //private AnimationContainer enemyExplosions;
         private List<Image> explosionStrides;
         private const int EXPLOSION_LENGTH_MS = 500;
-        private List<List<Image>> typesOfEnemy;
+        //private List<List<Image>> typesOfEnemy;
         private List<Image> enemyStridesRed;
-        private MoveZigzagDown zigzagDown;
+        //private MoveZigzagDown zigzagDown;
         private StateMachine stateMachine;
-        private List<Image> greenBandits;
-        private List<Image> redBandits;
-        private List<Image> blueBandits;
-        private GreenSquadron greenB;
+        //private List<Image> greenBandits;
+        //private List<Image> redBandits;
+        //private List<Image> blueBandits;
+        //private GreenSquadron greenB;
         private GameTimer gameTimer;
-        private BlueSquadron blueB;
-        private GameOver gameOver;
-        private RedSquadron redB;
-        private MoveDown moveDown;
-        private List<ISquadron> bandidosSquadron;
+        //private BlueSquadron blueB;
+        //private GameOver gameOver;
+        //private RedSquadron redB;
+        //private MoveDown moveDown;
+        //private List<ISquadron> bandidosSquadron;
         private Player player;
-        private Score score;
-        private Window window;
-        private NoMove noMove;
-        private Random random;
-        private int movingNum;
-        private int roundCount;
-        private float DifficultyValue;
-        private Enemy django;
-        private int deadEnemies;
+        //private Score score;
+        private Window win;
+        //private NoMove noMove;
+        //private Random random;
+        //private int movingNum;
+        //private int roundCount;
+        //private float DifficultyValue;
+        //private Enemy django;
+        //private int deadEnemies;
         public Game()
         {
-            stateMachine = new StateMachine();
-            window = new Window("Galaga", 500, 500);
+            win = new Window("Galaga", 500, 500);
+            win.RegisterEventBus(GalagaBus.GetBus());
             gameTimer = new GameTimer(30, 30);
+            stateMachine = new StateMachine();
             //TODO mute from to here
+
             player = new Player(new DynamicShape(
                         new Vec2F(0.45f, 0.1f), new Vec2F(0.1f, 0.1f)),
                         new Image(Path.Combine("Assets", "Images", "Player.png")));
+
             //TODO mute to here
 
+            GalagaBus.GetBus().InitializeEventBus(new List<GameEventType>(){
+               GameEventType.WindowEvent,
+               GameEventType.InputEvent,
+               GameEventType.GameStateEvent,
+               //GameEventType.PlayerEvent
+            });
+
+            GalagaBus.GetBus().Subscribe(GameEventType.WindowEvent, this);
+            GalagaBus.GetBus().Subscribe(GameEventType.InputEvent, this);
+            //GalagaBus.GetBus().Subscribe(GameEventType.GameStateEvent, stateMachine);
+            //GalagaBus.GetBus().Subscribe(GameEventType.PlayerEvent, player);
+
+            /*
             eventBus = new GameEventBus<object>();
             eventBus.InitializeEventBus(new List<GameEventType>() {
                  GameEventType.InputEvent,GameEventType.PlayerEvent,GameEventType.WindowEvent});
-            window.RegisterEventBus(eventBus);
             eventBus.Subscribe(GameEventType.InputEvent, this);
             eventBus.Subscribe(GameEventType.PlayerEvent, player);
+            */
 
             //TODO mute from here
+            /*
             var images = ImageStride.CreateStrides(4, Path.Combine("Assets", "Images", "BlueMonster.png"));
             const int numEnemies = 7;
             enemies = new EntityContainer<Enemy>(20);
@@ -77,6 +94,7 @@ namespace Galaga
             playerShots = new EntityContainer();
             playerShotImage = new Image(Path.Combine("Assets", "Images", "BulletRed2.png"));
             enemyExplosions = new AnimationContainer(numEnemies);
+            */
             //TODO mute to here
 
             explosionStrides = ImageStride.CreateStrides(8,
@@ -84,10 +102,11 @@ namespace Galaga
             enemyStridesRed = ImageStride.CreateStrides(2,
                     Path.Combine("Assets", "Images", "RedMonster.png"));
 
-            score = new Score(new Vec2F(0.7f, 0.7f), new Vec2F(0.3f, 0.3f));
-            gameOver = new GameOver(new Vec2F(0.2f, 0.3f), new Vec2F(0.4f, 0.4f));
+            //score = new Score(new Vec2F(0.7f, 0.7f), new Vec2F(0.3f, 0.3f));
+            //gameOver = new GameOver(new Vec2F(0.2f, 0.3f), new Vec2F(0.4f, 0.4f));
 
             //TODO mute from here
+            /*
             redB = new RedSquadron();
             blueB = new BlueSquadron();
             greenB = new GreenSquadron();
@@ -102,39 +121,43 @@ namespace Galaga
                 Path.Combine("Assets", "Images", "BlueMonster.png"));
 
             typesOfEnemy = new List<List<Image>>() { greenBandits, redBandits, blueBandits };
+            */
             //TODO mute to here
 
-            roundCount = 7;
-            deadEnemies = 0;
-            DifficultyValue = 0.03f;
-            random = new Random();
+            //roundCount = 7;
+            //deadEnemies = 0;
+            //DifficultyValue = 0.03f;
+            //random = new Random();
 
-            bandidosSquadron = new List<ISquadron>();
+            //bandidosSquadron = new List<ISquadron>();
 
         }
 
         public void Run()
         {
-            while (window.IsRunning())
+            while (win.IsRunning())
             {
                 gameTimer.MeasureTime();
                 while (gameTimer.ShouldUpdate())
                 {
-                    window.PollEvents();
-                    //GalagaBus.GetBus().ProcessEvents(); //! when GalagaBus.cs is on, then umute
-                    eventBus.ProcessEvents();  //! mute when galaga.cs takes over
-                                               //stateMachine.ActiveState.UpdateGameLogic();//! when gamerunning.cs is on, then umute
-                                               //TODO mute from here
+                    win.PollEvents();
+                    stateMachine.ActiveState.UpdateGameLogic();//! when gamerunning.cs is on, then umute
+                    GalagaBus.GetBus().ProcessEvents(); //! when GalagaBus.cs is on, then umute
+                    //eventBus.ProcessEvents();  //! mute when galaga.cs takes over
+                    //TODO mute from here
+                    /*
                     IterateShots();
                     player.Move();
                     NextRound();
                     FormationAction();
+                    */
                     //TODO mute to here
 
                 }
 
                 if (gameTimer.ShouldRender())
                 {
+                    /*
                     IsGameOver();
                     if (gameOver.gameIsOver == true)
                     {
@@ -145,23 +168,25 @@ namespace Galaga
                         score.RenderScore();
                         window.SwapBuffers();
                     }
-                    else
-                    {
-                        window.Clear();
-                        //stateMachine.ActiveState.RenderState(); //! when gamerunning.cs is on, then umute
-                        score.RenderScore();  //TODO mute
-                        player.Render();
-                        enemies.RenderEntities();
-                        playerShots.RenderEntities();
-                        enemyExplosions.RenderAnimations();
-                        // render game entities here... 
-                        window.SwapBuffers();
-                    }
+                    */
+                    // else
+                    // {
+                    win.Clear();
+                    stateMachine.ActiveState.RenderState(); //! when gamerunning.cs is on, then umute
+                                                            //score.RenderScore();  //TODO mute
+                                                            //player.Render();
+                                                            //enemies.RenderEntities();
+                                                            //playerShots.RenderEntities();
+                                                            //enemyExplosions.RenderAnimations();
+                                                            // render game entities here... 
+                    win.SwapBuffers();
+                    //}
+
                 }
                 if (gameTimer.ShouldReset())
                 {
                     // this update happens once every second
-                    window.Title = $"Galaga | (UPS,FPS): ({gameTimer.CapturedUpdates},{gameTimer.CapturedFrames})";
+                    win.Title = $"Galaga | (UPS,FPS): ({gameTimer.CapturedUpdates},{gameTimer.CapturedFrames})";
                 }
             }
         }
@@ -169,6 +194,7 @@ namespace Galaga
         public void KeyPress(string key)
         {
             // TODO mute from here
+            /*
             //switch on key string and set the player's move direction
             switch (key)
             {
@@ -204,12 +230,14 @@ namespace Galaga
                     break;
             }
             //TODO mute to here
+            */
         }
 
 
         public void KeyRelease(string key)
         {
             // TODO mute from here
+            /*
             // switch on key string and disable the player's move direction
             // TODO: Close window if escape is pressed
             switch (key)
@@ -253,24 +281,50 @@ namespace Galaga
                 default:
                     break;
             }
+            */
 
             //TODO mute to here
         }
 
-        public void ProcessEvent(GameEventType type, GameEvent<object> gameEvent)
+        public void ProcessEvent(GameEventType evenType, GameEvent<object> gameEvent)
         {
-            switch (gameEvent.Parameter1)
+            if (evenType == GameEventType.WindowEvent)
             {
-                case "KEY_PRESS":
-                    KeyPress(gameEvent.Message);
-                    break;
-                case "KEY_RELEASE":
-                    KeyRelease(gameEvent.Message);
-                    break;
-                default:
-                    break;
+                switch (gameEvent.Message)
+                {
+                    case "CLOSE_WINDOW":
+                        win.CloseWindow();
+                        break;
+                }
             }
+            if (evenType == GameEventType.GameStateEvent)
+            {
+                stateMachine.ProcessEvent(evenType, gameEvent);
+            }
+            if (evenType == GameEventType.PlayerEvent) { }
+            else if (evenType == GameEventType.InputEvent)
+            {
+
+                switch (gameEvent.Parameter1)
+                {
+                    case "KEY_PRESS":
+                        stateMachine.ActiveState.HandleKeyEvent(
+                            gameEvent.Message,
+                            gameEvent.Parameter1);
+
+                        break;
+                    case "KEY_RELEASE":
+                        stateMachine.ActiveState.HandleKeyEvent(
+                            gameEvent.Message,
+                            gameEvent.Parameter1);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
         }
+        /*
         public void AddNewShot()
         {
             var shot = new DynamicShape(new Vec2F(player.getPos().X,
@@ -280,17 +334,20 @@ namespace Galaga
             playerShots.AddDynamicEntity(shot, playerShotImage);
 
         }
-        private void IsGameOver()
-        {
-            enemies.Iterate(enemy =>
-            {
-                if (enemy.EnemyWins())
-                {
-                    gameOver.gameIsOver = true;
-                }
-            });
-        }
-
+        */
+        /*
+         private void IsGameOver()
+         {
+             enemies.Iterate(enemy =>
+             {
+                 if (enemy.EnemyWins())
+                 {
+                     gameOver.gameIsOver = true;
+                 }
+             });
+         }
+         */
+        /*
         private void IterateShots()
         {
             playerShots.Iterate(shot =>
@@ -321,7 +378,7 @@ namespace Galaga
                                     enemy.DeleteEntity();
                                     score.AddPoint();
                                     deadEnemies++;
-                                    if (deadEnemies >= 3)
+                                    if (deadEnemies >= 10)
                                     {
                                         //! why this doesnt work?
                                         moveDown.MOVEMENT_SPEED += 0.001f;
@@ -339,8 +396,9 @@ namespace Galaga
                 }
             });
         }
+        */
 
-
+        /*
         public void AddExplosion(Vec2F position, Vec2F extent)
         {
             // TODO: add explosion to the AnimationContainer
@@ -350,6 +408,8 @@ namespace Galaga
             );
 
         }
+        */
+        /*
 
         private void QuickReactionForce()
         {
@@ -401,31 +461,34 @@ namespace Galaga
             }
 
         }
+        */
+        /*
+         private void FormationAction()
+         {
+             switch (movingNum)
+             {
+                 case 1:
+                     zigzagDown.MoveEnemies(enemies);
+                     break;
+                 case 2:
+                     moveDown.MoveEnemies(enemies);
+                     break;
+                 case 3:
+                     moveDown.MoveEnemies(enemies);
+                     break;
+             }
+         }
 
-        private void FormationAction()
-        {
-            switch (movingNum)
-            {
-                case 1:
-                    zigzagDown.MoveEnemies(enemies);
-                    break;
-                case 2:
-                    moveDown.MoveEnemies(enemies);
-                    break;
-                case 3:
-                    moveDown.MoveEnemies(enemies);
-                    break;
-            }
-        }
 
 
-        private void NextRound()
-        {
-            if ((enemies.CountEntities() == 0))
-            {
-                QuickReactionForce();
-            }
-        }
+         private void NextRound()
+         {
+             if ((enemies.CountEntities() == 0))
+             {
+                 QuickReactionForce();
+             }
+         }
+         */
 
 
 

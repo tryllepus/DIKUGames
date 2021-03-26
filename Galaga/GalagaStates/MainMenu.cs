@@ -8,9 +8,9 @@ using Galaga;
 
 namespace GalagaStates
 {
-    public class MainMenu //: IGameState
+    public class MainMenu : IGameState
     {
-        /*
+
         private static MainMenu instance = null;
         private Entity backGroundImage;
         private Text[] menuButtons;
@@ -32,10 +32,13 @@ namespace GalagaStates
                 new Text("Quit", new Vec2F(0.3f, 0.25f), new Vec2F(0.2f, 0.3f)),
             };
             InitializeGameState();
+            
         }
+        
         public void GameLoop()
         {
         }
+        
 
 
         public void InitializeGameState()
@@ -111,6 +114,6 @@ namespace GalagaStates
                 }
             }
         }
-        */
+
     }
 }

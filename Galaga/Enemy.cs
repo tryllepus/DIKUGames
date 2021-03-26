@@ -47,8 +47,6 @@ namespace Galaga
                 critCondition = true;
                 this.Image = enemyStridesRed;
                 this.Shape.Position.Y -= 0.006f;
-                //this.New_MOVEMENT_SPEED = this.MOVEMENT_SPEED * 4.0f;
-                //this.MOVEMENT_SPEED = New_MOVEMENT_SPEED;
             }
         }
         public bool isDead()

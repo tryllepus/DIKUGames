@@ -4,7 +4,7 @@ namespace GalagaStates
 {
     public enum GameStateType
     {
-        /*
+        
         GameRunning,
         GamePaused,
         MainMenu
@@ -39,6 +39,6 @@ namespace GalagaStates
                     throw new ArgumentException("Invalid state");
             }
         }
-        */
+        
     }
 }

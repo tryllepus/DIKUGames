@@ -8,33 +8,22 @@ using Galaga;
 
 namespace GalagaStates
 {
-    public class GamePaused // : IGameState
+    public class GamePaused : IGameState
     {
-        /*
+
         private static GamePaused instance = null;
         private Entity backGroundImage;
         private Text[] pauseMenuButtons;
         private int activeMenuButton;
         private int maxMenuButtons;
+        public GamePaused()
+        {
+            InitializeGameState();
+        }
         public static GamePaused GetInstance()
         {
             return GamePaused.instance ?? (GamePaused.instance = new GamePaused());
         }
-
-
-        public GamePaused()
-        {
-            backGroundImage = new Entity
-                (new StationaryShape(0.0f, 0.0f, 1.0f, 1.0f),
-                    new Image(Path.Combine("Assets", "Images", "SpaceBackground.png")));
-
-            pauseMenuButtons = new[] {
-                new Text("Continue", new Vec2F(0.3f, 0.5f), new Vec2F(0.2f, 0.3f)),
-                new Text("Main Menu", new Vec2F(0.3f, 0.25f), new Vec2F(0.2f, 0.3f)),
-            };
-            InitializeGameState();
-        }
-
 
         public void GameLoop()
         {
@@ -45,6 +34,14 @@ namespace GalagaStates
 
         public void InitializeGameState()
         {
+            backGroundImage = new Entity
+                (new StationaryShape(0.0f, 0.0f, 1.0f, 1.0f),
+                    new Image(Path.Combine("Assets", "Images", "SpaceBackground.png")));
+
+            pauseMenuButtons = new[] {
+                new Text("Continue", new Vec2F(0.3f, 0.5f), new Vec2F(0.2f, 0.3f)),
+                new Text("Main Menu", new Vec2F(0.3f, 0.25f), new Vec2F(0.2f, 0.3f)),
+            };
             activeMenuButton = 0;
             maxMenuButtons = 1;
         }
@@ -126,6 +123,6 @@ namespace GalagaStates
 
 
         }
-        */
+
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System;
 using DIKUArcade.Entities;
 using DIKUArcade.EventBus;
 using DIKUArcade.Graphics;
@@ -9,27 +10,41 @@ using DIKUArcade.State;
 using Galaga;
 using Galaga.MovementStrategy;
 using Galaga.Squadrons;
+using DIKUArcade;
 
 namespace GalagaStates
 {
-    public class GameRunning //: IGameState
+    public class GameRunning : IGameState
     {
-        /*
+
         private static GameRunning instance;
+        private EntityContainer<Enemy> enemies;
         private IBaseImage playerShotImage;
         private const int EXPLOSION_LENGTH_MS = 500;
         private AnimationContainer enemyExplosions;
+        private MoveDown moveDown;
+        private NoMove noMove;
+        private Window window;
         private List<Image> explosionStrides;
         private EntityContainer playerShots;
         private MoveZigzagDown zigzagDown;
         private List<List<Image>> typesOfEnemy;
-        private List<List<Image>> alternativeEnemyStrides;
+        //private List<List<Image>> alternativeEnemyStrides;
         private List<Image> blueBandits;
         private List<Image> redBandits;
         private List<Image> greenBandits;
         private List<ISquadron> bandidosSquadron;
         private Player player;
+        private Score score;
         private Image backgroundImage;
+        private int deadEnemies;
+        private int roundCount;
+        private RedSquadron redB;
+        private BlueSquadron blueB;
+        private GreenSquadron greenB;
+        private int movingNum;
+        private GameOver gameOver;
+        private Random random;
 
         public static GameRunning GetInstance()
         {
@@ -41,40 +56,48 @@ namespace GalagaStates
         public GameRunning()
         {
             backgroundImage = new Image(Path.Combine("Assets", "Images", "SpaceBackground.png"));
+            window = new Window("Galaga", 500, 500);
+
             player = new Player(new DynamicShape(
                        new Vec2F(0.45f, 0.1f), new Vec2F(0.1f, 0.1f)),
                        new Image(Path.Combine("Assets", "Images", "Player.png")));
 
-            bandidosSquadron = new List<ISquadron>() {new GreenSquadron(),
-                                 new RedSquadron(), new BlueSquadron()};
-
-            greenBandits = ImageStride.CreateStrides(3,
+            greenBandits = ImageStride.CreateStrides(2,
                 Path.Combine("Assets", "Images", "GreenMonster.png"));
 
             redBandits = ImageStride.CreateStrides(2,
                 Path.Combine("Assets", "Images", "RedMonster.png"));
 
-            blueBandits = ImageStride.CreateStrides(3,
+            blueBandits = ImageStride.CreateStrides(4,
                 Path.Combine("Assets", "Images", "BlueMonster.png"));
 
+            bandidosSquadron = new List<ISquadron>();
+            redB = new RedSquadron();
+            blueB = new BlueSquadron();
+            greenB = new GreenSquadron();
 
             typesOfEnemy = new List<List<Image>>() { greenBandits, redBandits, blueBandits };
+
             zigzagDown = new MoveZigzagDown();
-            alternativeEnemyStrides = new List<List<Image>>() { };
+            noMove = new NoMove();
+            moveDown = new MoveDown();
+
+            //alternativeEnemyStrides = new List<List<Image>>() { };
 
             explosionStrides = ImageStride.CreateStrides(8,
                            Path.Combine("Assets", "Images", "Explosion.png"));
+            score = new Score(new Vec2F(0.7f, 0.7f), new Vec2F(0.3f, 0.3f));
+            gameOver = new GameOver(new Vec2F(0.2f, 0.3f), new Vec2F(0.4f, 0.4f));
 
 
             enemyExplosions = new AnimationContainer(60);
             playerShots = new EntityContainer();
             playerShotImage = new Image(Path.Combine("Assets", "Images", "BulletRed2.png"));
 
-            for (int i = 0; i < bandidosSquadron.Count - 1; i++)
-            {
-                //! is not working
-                //bandidosSquadron[i].CreateEnemies(typesOfEnemy[i], alternativeEnemyStrides[i]);
-            }
+            roundCount = 7;
+            deadEnemies = 0;
+            random = new Random();
+
         }
 
 
@@ -130,6 +153,19 @@ namespace GalagaStates
                                     if (enemy.isDead())
                                     {
                                         enemy.DeleteEntity();
+                                        score.AddPoint();
+                                        deadEnemies++;
+                                        if (deadEnemies >= 10)
+                                        {
+                                            //! why this doesnt work?
+                                            moveDown.MOVEMENT_SPEED += 0.001f;
+                                            zigzagDown.MOVEMENT_SPEED += 0.001f;
+                                            deadEnemies = 0;
+                                            //enemy.Criticalhealth();
+                                            //enemy.Shape.Position.Y -= 0.006f; 
+                                            //moveDown.MoveEnemies(enemies);
+                                            //enemy.MOVEMENT_SPEED += 3.0f;
+                                        }
 
                                     }
                                 }
@@ -152,27 +188,120 @@ namespace GalagaStates
 
         public void InitializeGameState()
         {
+
         }
 
         public void UpdateGameLogic()
         {
+            DIKUArcade.Window.CreateOpenGLContext();
             IterateShots();
-            for (int i = 0; i < bandidosSquadron.Count - 1; i++)
-            {
-                zigzagDown.MoveEnemies(bandidosSquadron[i].Enemies);
-            }
             player.Move();
+            FormationAction();
+            NextRound();
         }
         public void RenderState()
         {
-            backgroundImage.Render(new StationaryShape(0.0f, 0.0f, 1.0f, 1.0f));
-            player.Render();
-            for (int i = 0; i < bandidosSquadron.Count - 1; i++)
+            IsGameOver();
+            if (gameOver.gameIsOver == true)
             {
-                bandidosSquadron[i].Enemies.RenderEntities();
+                window.Clear();
+                gameOver.display.RenderText();
+                enemies.ClearContainer();
+                playerShots.ClearContainer();
+                score.RenderScore();
+                window.SwapBuffers();
             }
-            playerShots.RenderEntities();
-            enemyExplosions.RenderAnimations();
+            else
+            {
+                backgroundImage.Render(new StationaryShape(0.0f, 0.0f, 1.0f, 1.0f));
+                player.Render();
+                score.RenderScore();
+                enemies.RenderEntities();
+                playerShots.RenderEntities();
+                enemyExplosions.RenderAnimations();
+            }
+        }
+        private void QuickReactionForce()
+        {
+            greenB.CreateEnemies(greenBandits, typesOfEnemy[0]);
+            redB.CreateEnemies(redBandits, typesOfEnemy[1]);
+            blueB.CreateEnemies(blueBandits, typesOfEnemy[2]);
+
+            bandidosSquadron.Add(greenB);
+            bandidosSquadron.Add(redB);
+            bandidosSquadron.Add(blueB);
+
+            var enemyChooser = random.Next(1, 4);
+            if ((bandidosSquadron.Count >= 0))
+            {
+                switch (enemyChooser)
+                {
+                    case 1:
+                        movingNum = 1;
+                        enemies = new EntityContainer<Enemy>(greenB.MaxEnemies);
+                        foreach (Enemy enemy in greenB.Enemies)
+                        {
+                            //enemy.MOVEMENT_SPEED *= DifficultyValue;
+                            enemies.AddEntity(enemy);
+                        }
+                        roundCount++;
+                        break;
+                    case 2:
+                        movingNum = 2;
+                        enemies = new EntityContainer<Enemy>(redB.MaxEnemies);
+                        foreach (Enemy enemy in redB.Enemies)
+                        {
+                            //enemy.MOVEMENT_SPEED *= DifficultyValue;
+                            enemies.AddEntity(enemy);
+                        }
+                        roundCount++;
+                        break;
+                    case 3:
+                        movingNum = 3;
+                        enemies = new EntityContainer<Enemy>(blueB.MaxEnemies);
+                        foreach (Enemy enemy in blueB.Enemies)
+                        {
+                            //enemy.MOVEMENT_SPEED *= DifficultyValue;
+                            enemies.AddEntity(enemy);
+                        }
+                        roundCount++;
+                        break;
+                }
+            }
+
+        }
+
+        private void FormationAction()
+        {
+            switch (movingNum)
+            {
+                case 1:
+                    zigzagDown.MoveEnemies(enemies);
+                    break;
+                case 2:
+                    moveDown.MoveEnemies(enemies);
+                    break;
+                case 3:
+                    moveDown.MoveEnemies(enemies);
+                    break;
+            }
+        }
+        private void NextRound()
+        {
+            if ((enemies.CountEntities() == 0))
+            {
+                QuickReactionForce();
+            }
+        }
+        private void IsGameOver()
+        {
+            enemies.Iterate(enemy =>
+            {
+                if (enemy.EnemyWins())
+                {
+                    gameOver.gameIsOver = true;
+                }
+            });
         }
 
 
@@ -247,7 +376,6 @@ namespace GalagaStates
                             break;
 
                         case "KEY_UP":
-                            //player.SetMoveUp(false);
                             GalagaBus.GetBus().RegisterEvent(
                                     GameEventFactory<object>.CreateGameEventForAllProcessors(
                                         GameEventType.PlayerEvent, this,
@@ -255,7 +383,6 @@ namespace GalagaStates
                             break;
 
                         case "KEY_DOWN":
-                            //player.SetMoveDown(false);
                             GalagaBus.GetBus().RegisterEvent(
                                     GameEventFactory<object>.CreateGameEventForAllProcessors(
                                         GameEventType.PlayerEvent, this,
@@ -269,6 +396,6 @@ namespace GalagaStates
 
             }
         }
-        */
+
     }
 }
