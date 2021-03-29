@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace GalagaTests
 {
-    public class Tests
+    public class TestSquadron
     {
         [SetUp]
         public void Setup()
