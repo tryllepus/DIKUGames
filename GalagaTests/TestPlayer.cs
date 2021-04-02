@@ -28,7 +28,6 @@ namespace GalagaTests
             this.player = new Player(new DynamicShape(
                         new Vec2F(0.45f, 0.1f), new Vec2F(0.1f, 0.1f)),
                         new Image(Path.Combine("Assets", "Images", "Player.png")));
-
             rollerCoaster = GalagaBus.GetBus();
 
             rollerCoaster.InitializeEventBus(new List<GameEventType>(){
@@ -39,7 +38,6 @@ namespace GalagaTests
                 GameEventType.TimedEvent,
                 GameEventType.ControlEvent
             });
-
         }
 
         [TestCase("KEY_LEFT")]

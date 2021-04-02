@@ -77,8 +77,6 @@ namespace GalagaTests
 
             GalagaBus.GetBus().ProcessEventsSequentially();
             Assert.That(cooster.ActiveState, Is.InstanceOf<MainMenu>()); 
-
         }
-
     }
 }
