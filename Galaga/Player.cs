@@ -27,7 +27,6 @@ namespace Galaga
             this.moveLeft = 0.0f;
             this.moveDown = 0.0f;
             this.moveUp = 0.0f;
-
         }
 
         public Vec2F getPos()

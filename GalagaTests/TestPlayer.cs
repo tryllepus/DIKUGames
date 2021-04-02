@@ -64,10 +64,9 @@ namespace GalagaTests
                     break;
             }
             rollerCoaster.ProcessEvents();
-            Assert.AreNotEqual(player.getPos(), newpos);
-            
-
-
+            Assert.AreNotSame(player.getPos(), newpos);
         }
+
+        
     }
 }
