@@ -1,0 +1,40 @@
+Map:
+------------
+------------
+aaaaaaaaaaaa
+aadaaaaaadaa
+------------
+bbbbbdbbbbbb
+bbdbbbdbbdbb
+------------
+cccccccccccc
+cccccccccccc
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+------------
+Map/
+
+Meta:
+Name: LEVEL 2
+Time: 180
+PowerUp: d
+Meta/
+
+Legend:
+a) red-block.png
+b) orange-block.png
+c) yellow-block.png
+d) orange-block.png
+Legend/
